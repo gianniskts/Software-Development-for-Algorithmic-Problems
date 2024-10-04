@@ -1,4 +1,4 @@
-#ifndef PARSIN_H
+#ifndef PARSING_H
 #define PARSING_H
 
 #include <string>
@@ -15,8 +15,10 @@ struct InputJSON {
     std::vector<std::pair<int, int>> additional_constraints;
 };
 
+// Parse input file in JSON format
 InputJSON parse_file (const std::string& filename);
 
+// Output project's results in JSON format
 void output_results (const std::string& filename, const InputJSON& input);
 
 #endif // PARSING_H
