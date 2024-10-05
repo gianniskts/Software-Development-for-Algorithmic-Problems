@@ -7,7 +7,7 @@
 int main() {
     try {
         // Parse the input file
-        InputJSON input_json = parse_file("../cgshop2025_examples_ortho_10_ff68423e.json");
+        InputJSON input_json = parse_file("../cgshop2025_examples_simple-polygon-exterior_10_34daa0f6.json");
 
         // Perform constrained delaunay triangulation
         delaunay_const_triangulation(input_json);

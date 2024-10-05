@@ -1,8 +1,11 @@
-#include "../includes/dtriangulation.h"
+// TODO: Parsing ta extra constraints OK
+// 3. TODO: Search how to add Steiner points !!
+// 4. TODO: Fix output json after Steiner pts ~
+// 2. TODO: Validate visual results apo ta examples (later)
+// 1. Extra TODO: na spasw tis functions se modules (next time)
 
-bool is_point_in_boundary(const Point& point, const Polygon_2 polygon) {
-    return polygon.bounded_side(point) == CGAL::ON_BOUNDED_SIDE;
-}
+
+#include "../includes/dtriangulation.h"
 
 
 // Function to set instance region boundary
@@ -10,19 +13,17 @@ void set_boundary(CDT& cdt, const std::vector<Point>& boundary) {
     // Represent the boundary as a polygon to restrict the triangulation
     Polygon_2 polygon(boundary.begin(), boundary.end());
     
-    for (size_t i = 0; i < boundary.size(); i++) {
-        // Add constraint between consecutive boundary points
-        cdt.insert_constraint(boundary[i], boundary[(i + 1) % boundary.size()]);
-    }
-
-    // TODO: Set region boundary as a polygon
-    // in order to restrict the triangulation inside it
-
-    // Extra TODO: na spasw ton kwdika se perissotera files
-
+    cdt.insert_constraint(polygon.begin(), polygon.end(), true);
 }
 
-// Function to perform delaunay triangulation
+// Function to set the additional constraints
+void set_constraints(CDT& cdt, const std::vector<std::pair<Point,Point>>& constraints) {
+    for (size_t i = 0; i < constraints.size(); i++) {
+        cdt.insert_constraint(constraints[i].first, constraints[i].second);
+    }
+}
+
+// Function to perform delaunay triangulation and visualize results
 void delaunay_const_triangulation(InputJSON input_data) {
     
     // Create CDT
@@ -31,21 +32,40 @@ void delaunay_const_triangulation(InputJSON input_data) {
     // Store input data
     std::vector<Point> points;
     std::vector<Point> region_boundary;
+    std::vector<std::pair<Point, Point>> extra_constraints;
 
     for (size_t i = 0; i < input_data.num_points; i++) {
         points.push_back(Point(input_data.points_x[i], input_data.points_y[i]));
     }
 
-    for (size_t i = 0; i < input_data.region_boundary.size(); i++) {
-        region_boundary.push_back(points[input_data.region_boundary[i]]);
+    // If region boundary is given
+    if (input_data.region_boundary.size() != 0) {
+        for (size_t i = 0; i < input_data.region_boundary.size(); i++) {
+            region_boundary.push_back(points[input_data.region_boundary[i]]);
+        }
+
+        // Set region boundary
+        set_boundary(cdt, region_boundary);
     }
 
-    set_boundary(cdt, region_boundary);
+    // If additional contraints are given
+    if (input_data.num_constraints) {
+        for (size_t i = 0; i < input_data.num_constraints; i++) {
+            Point p1 = points[input_data.additional_constraints[i].first];
+            Point p2 = points[input_data.additional_constraints[i].second];
+            extra_constraints.push_back(std::make_pair(p1, p2));
+        }
 
+        // Set additional constraints
+        set_constraints(cdt, extra_constraints);
+    }    
+
+    // Add all the points in the triangulation
     for (size_t i = 0; i < input_data.num_points; i++) {
         cdt.insert(points[i]);
     }
 
+    // Refines the constrained DT into a conforming DT
     CGAL::make_conforming_Delaunay_2(cdt);
 
     // Visualize CDT's results
