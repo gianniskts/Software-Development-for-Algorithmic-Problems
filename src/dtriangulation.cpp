@@ -1,27 +1,9 @@
-// TODO: Parsing ta extra constraints OK
-// 3. TODO: Search how to add Steiner points !!
-// 4. TODO: Fix output json after Steiner pts ~
-// 2. TODO: Validate visual results apo ta examples (later)
-// 1. Extra TODO: na spasw tis functions se modules (next time)
-
+// TODO: Search how to add Steiner points !!
+// TODO: Fix output json after Steiner pts ~
 
 #include "../includes/dtriangulation.h"
-
-
-// Function to set instance region boundary
-void set_boundary(CDT& cdt, const std::vector<Point>& boundary) {
-    // Represent the boundary as a polygon to restrict the triangulation
-    Polygon_2 polygon(boundary.begin(), boundary.end());
-    
-    cdt.insert_constraint(polygon.begin(), polygon.end(), true);
-}
-
-// Function to set the additional constraints
-void set_constraints(CDT& cdt, const std::vector<std::pair<Point,Point>>& constraints) {
-    for (size_t i = 0; i < constraints.size(); i++) {
-        cdt.insert_constraint(constraints[i].first, constraints[i].second);
-    }
-}
+#include "../includes/rboundary.h"
+#include "../includes/xtrconstraints.h"
 
 // Function to perform delaunay triangulation and visualize results
 void delaunay_const_triangulation(InputJSON input_data) {
