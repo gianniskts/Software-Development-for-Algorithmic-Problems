@@ -38,7 +38,7 @@ include_directories(BEFORE includes)
 # ##########################################################
 create_single_source_cgal_program("main.cpp")
 
-add_executable(main src/main.cpp src/parsing.cpp src/dtriangulation.cpp src/rboundary.cpp src/xtrconstraints.cpp)
+add_executable(main src/main.cpp src/parsing.cpp src/dtriangulation.cpp src/rboundary.cpp src/xtrconstraints.cpp src/edgeflip.cpp)
 
 if (CGAL_Qt5_FOUND)
     add_definitions(-DCGAL_USE_BASIC_VIEWER)

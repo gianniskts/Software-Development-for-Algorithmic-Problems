@@ -1,9 +1,11 @@
 // TODO: Search how to add Steiner points !!
 // TODO: Fix output json after Steiner pts ~
+// TODO: Implement the algorithm using Templates !! (important)
 
 #include "../includes/dtriangulation.h"
 #include "../includes/rboundary.h"
 #include "../includes/xtrconstraints.h"
+#include "../includes/edgeflip.h"
 
 // Function to perform delaunay triangulation and visualize results
 void delaunay_const_triangulation(InputJSON input_data) {
@@ -49,6 +51,8 @@ void delaunay_const_triangulation(InputJSON input_data) {
 
     // Refines the constrained DT into a conforming DT
     CGAL::make_conforming_Delaunay_2(cdt);
+
+    edge_flip(cdt);
 
     // Visualize CDT's results
     CGAL::draw(cdt);
