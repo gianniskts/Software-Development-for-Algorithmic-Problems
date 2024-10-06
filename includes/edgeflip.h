@@ -3,15 +3,10 @@
 
 #include "../includes/dtriangulation.h"
 
-// Function to calculate angle at a vertex
-double angle(const Point& p1, const Point& p2, const Point& p3);
+// Function to check if a triangle is obtuse
+bool is_obtuse(const Point& p0, const Point& p1, const Point& p2);
 
-// Function to check if we must flip edge
-bool should_flip(const CDT& cdt, Edge edge);
-
-bool is_flip_valid(const CDT& cdt, const CDT::Edge& edge);
-
-// Function to perform edge flips
-void edge_flip(CDT& cdt);
+// Function to eliminate obtuse triangles (if possible)
+void eliminate_obtuse_triangles(CDT& cdt);
 
 #endif // EDGEFLIP_H

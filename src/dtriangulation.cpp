@@ -1,3 +1,4 @@
+// Note: Edge flips are performed by the Class automatically
 // TODO: Search how to add Steiner points !!
 // TODO: Fix output json after Steiner pts ~
 // TODO: Implement the algorithm using Templates !! (important)
@@ -49,10 +50,10 @@ void delaunay_const_triangulation(InputJSON input_data) {
         cdt.insert(points[i]);
     }
 
-    // Refines the constrained DT into a conforming DT
+    // Refine the constrained DT into a conforming DT
     CGAL::make_conforming_Delaunay_2(cdt);
 
-    edge_flip(cdt);
+    eliminate_obtuse_triangles(cdt);
 
     // Visualize CDT's results
     CGAL::draw(cdt);
