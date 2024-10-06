@@ -28,7 +28,4 @@ typedef CGAL::Polygon_2<K>                                          Polygon_2;
 // Function to perform constrained delaunay triangulation
 void delaunay_const_triangulation(InputJSON input_data);
 
-// Function to set instance region boundary
-void set_boundary(CDT& cdt, const std::vector<Point>& boundary);
-
 #endif // DTRIANGULATION_H

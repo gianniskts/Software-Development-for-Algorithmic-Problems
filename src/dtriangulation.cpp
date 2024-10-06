@@ -1,4 +1,4 @@
-// Note: Edge flips are performed by the Class automatically
+// TODO: Mark anything outside the polygon as infinite
 // TODO: Search how to add Steiner points !!
 // TODO: Fix output json after Steiner pts ~
 // TODO: Implement the algorithm using Templates !! (important)
