@@ -5,6 +5,8 @@ cmake_minimum_required(VERSION 3.1...3.23)
 
 project(Software-Development-for-Algorithmic-Problems)
 
+set(CMAKE_SKIP_RPATH TRUE)
+
 
 # CGAL and its components
 find_package(CGAL QUIET COMPONENTS Qt5)
@@ -28,19 +30,25 @@ if (NOT Boost_FOUND)
 
 endif()
 
-# include for local directory
-include_directories(BEFORE includes)
+include_directories(
+  BEFORE 
+  ${CMAKE_CURRENT_SOURCE_DIR}/includes
+)
 
-# include for local package
+set(SOURCES
+  main.cpp
+  src/parsing.cpp
+  src/dtriangulation.cpp
+  src/rboundary.cpp
+  src/xtrconstraints.cpp
+  src/edgeflip.cpp
+)
 
-
-# Creating entries for all C++ files with "main" routine
-# ##########################################################
-create_single_source_cgal_program("main.cpp")
-
-add_executable(main src/main.cpp src/parsing.cpp src/dtriangulation.cpp src/rboundary.cpp src/xtrconstraints.cpp src/edgeflip.cpp)
+add_executable(main ${SOURCES})
 
 if (CGAL_Qt5_FOUND)
-    add_definitions(-DCGAL_USE_BASIC_VIEWER)
+    target_compile_definitions(main PRIVATE CGAL_USE_BASIC_VIEWER)
     target_link_libraries(main PUBLIC CGAL::CGAL_Qt5)
 endif()
+
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
