@@ -64,7 +64,7 @@ public:
 protected:
   void compute_face(Facet_const_handle fh)
   {
-    CGAL::IO::Color c = get(ipm, fh)? CGAL::get_random_color(random) : CGAL::IO::white();
+    CGAL::IO::Color c = /*get(ipm, fh)? CGAL::get_random_color(random) :*/ CGAL::IO::white();
 
     face_begin(c);
 

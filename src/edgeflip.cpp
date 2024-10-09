@@ -33,6 +33,7 @@ void eliminate_obtuse_triangles(CDT& cdt) {
                     if (cdt.is_flipable(fh, i)) {
                         cdt.flip(fh, i);
                         flipped = true; // Set flag to continue checking
+                        std::cout<< "flipped" <<std::endl;
                         break;
                     }
                 }

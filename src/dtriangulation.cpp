@@ -1,12 +1,13 @@
 // TODO: Mark anything outside the polygon as infinite
+// Rel: Check example 8.4 (you might need to redefine a class for the graphics)
 // TODO: Search how to add Steiner points !!
 // TODO: Fix output json after Steiner pts ~
 // TODO: Implement the algorithm using Templates !! (important)
 
 #include "../includes/dtriangulation.h"
-#include "../includes/rboundary.h"
-#include "../includes/xtrconstraints.h"
 #include "../includes/edgeflip.h"
+#include "draw.h"
+
 
 // Function to perform delaunay triangulation and visualize results
 void delaunay_const_triangulation(InputJSON input_data) {
@@ -18,20 +19,30 @@ void delaunay_const_triangulation(InputJSON input_data) {
     std::vector<Point> points;
     std::vector<Point> region_boundary;
     std::vector<std::pair<Point, Point>> extra_constraints;
+    
 
+    // Store polygon's points
     for (size_t i = 0; i < input_data.num_points; i++) {
         points.push_back(Point(input_data.points_x[i], input_data.points_y[i]));
+
+        cdt.insert(points[i]);
+        
     }
 
-    // If region boundary is given
-    if (input_data.region_boundary.size() != 0) {
-        for (size_t i = 0; i < input_data.region_boundary.size(); i++) {
-            region_boundary.push_back(points[input_data.region_boundary[i]]);
-        }
-
-        // Set region boundary
-        set_boundary(cdt, region_boundary);
+    // Store boundary points
+    for (size_t i = 0; i < input_data.region_boundary.size(); i++) {
+        region_boundary.push_back(points[input_data.region_boundary[i]]);
     }
+
+    // Set region boundary
+    cdt.insert_constraint(region_boundary.begin(), region_boundary.end(), true);
+
+    std::unordered_map<Face_handle, bool> in_domain_map;
+    boost::associative_property_map<std::unordered_map<Face_handle,bool>> in_domain(in_domain_map);
+
+    //Mark facets that are inside the domain bounded by the polygon
+    CGAL::mark_domain_in_triangulation(cdt, in_domain);
+
 
     // If additional contraints are given
     if (input_data.num_constraints) {
@@ -41,20 +52,14 @@ void delaunay_const_triangulation(InputJSON input_data) {
             extra_constraints.push_back(std::make_pair(p1, p2));
         }
 
-        // Set additional constraints
-        set_constraints(cdt, extra_constraints);
+        // Set extra constraints
+        for (size_t i = 0; i < extra_constraints.size(); i++) {
+            cdt.insert_constraint(extra_constraints[i].first, extra_constraints[i].second);
+        }
     }    
 
-    // Add all the points in the triangulation
-    for (size_t i = 0; i < input_data.num_points; i++) {
-        cdt.insert(points[i]);
-    }
-
-    // Refine the constrained DT into a conforming DT
-    CGAL::make_conforming_Delaunay_2(cdt);
-
-    eliminate_obtuse_triangles(cdt);
+    //eliminate_obtuse_triangles(cdt);
 
     // Visualize CDT's results
-    CGAL::draw(cdt);
+    CGAL::draw(cdt, in_domain);
 }
