@@ -3,7 +3,7 @@
 #include <vector>
 #include "../includes/parsing.h"
 #include "../includes/dtriangulation.h"
-
+#include "../includes/edgeflip.h"
 
 int main() {
     try {

@@ -58,7 +58,10 @@ void delaunay_const_triangulation(InputJSON input_data) {
         }
     }    
 
-    //eliminate_obtuse_triangles(cdt);
+    // Refine the constrained DT into a conforming DT
+    CGAL::make_conforming_Delaunay_2(cdt);
+
+    eliminate_obtuse_triangles(cdt, points);
 
     // Visualize CDT's results
     CGAL::draw(cdt, in_domain);

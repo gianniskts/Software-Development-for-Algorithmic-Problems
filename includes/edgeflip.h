@@ -7,6 +7,6 @@
 bool is_obtuse(const Point& p0, const Point& p1, const Point& p2);
 
 // Function to eliminate obtuse triangles (if possible)
-void eliminate_obtuse_triangles(CDT& cdt);
+void eliminate_obtuse_triangles(CDT& cdt, std::vector<Point>& steiner_points);
 
 #endif // EDGEFLIP_H
