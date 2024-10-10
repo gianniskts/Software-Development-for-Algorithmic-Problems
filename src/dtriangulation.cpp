@@ -16,22 +16,22 @@ void delaunay_const_triangulation(InputJSON input_data) {
     CDT cdt;
 
     // Store input data
-    std::vector<Point> points;
+    Polygon_2 polygon;
     std::vector<Point> region_boundary;
     std::vector<std::pair<Point, Point>> extra_constraints;
     
 
     // Store polygon's points
     for (size_t i = 0; i < input_data.num_points; i++) {
-        points.push_back(Point(input_data.points_x[i], input_data.points_y[i]));
+        polygon.push_back(Point(input_data.points_x[i], input_data.points_y[i]));
 
-        cdt.insert(points[i]);
+        cdt.insert(polygon[i]);
         
     }
 
     // Store boundary points
     for (size_t i = 0; i < input_data.region_boundary.size(); i++) {
-        region_boundary.push_back(points[input_data.region_boundary[i]]);
+        region_boundary.push_back(polygon[input_data.region_boundary[i]]);
     }
 
     // Set region boundary
@@ -41,14 +41,14 @@ void delaunay_const_triangulation(InputJSON input_data) {
     boost::associative_property_map<std::unordered_map<Face_handle,bool>> in_domain(in_domain_map);
 
     //Mark facets that are inside the domain bounded by the polygon
-    CGAL::mark_domain_in_triangulation(cdt, in_domain);
+    
 
 
     // If additional contraints are given
     if (input_data.num_constraints) {
         for (size_t i = 0; i < input_data.num_constraints; i++) {
-            Point p1 = points[input_data.additional_constraints[i].first];
-            Point p2 = points[input_data.additional_constraints[i].second];
+            Point p1 = polygon[input_data.additional_constraints[i].first];
+            Point p2 = polygon[input_data.additional_constraints[i].second];
             extra_constraints.push_back(std::make_pair(p1, p2));
         }
 
@@ -56,12 +56,11 @@ void delaunay_const_triangulation(InputJSON input_data) {
         for (size_t i = 0; i < extra_constraints.size(); i++) {
             cdt.insert_constraint(extra_constraints[i].first, extra_constraints[i].second);
         }
-    }    
+    }
 
-    // Refine the constrained DT into a conforming DT
-    CGAL::make_conforming_Delaunay_2(cdt);
+    eliminate_obtuse_triangles(cdt, polygon);
 
-    eliminate_obtuse_triangles(cdt, points);
+    CGAL::mark_domain_in_triangulation(cdt, in_domain);
 
     // Visualize CDT's results
     CGAL::draw(cdt, in_domain);

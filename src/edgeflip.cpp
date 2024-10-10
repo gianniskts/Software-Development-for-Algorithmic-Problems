@@ -27,7 +27,7 @@ bool is_obtuse(const Point& A, const Point& B, const Point& C) {
 }
 
 // Function to eliminate obtuse triangles
-void eliminate_obtuse_triangles(CDT& cdt, std::vector<Point>& steiner_points) {
+void eliminate_obtuse_triangles(CDT& cdt, Polygon_2& steiner_points) {
     bool changes = true;
     int iteration = 0;
     const int max_iterations = 1000; // Prevent infinite loops
