@@ -20,6 +20,7 @@ typedef CGAL::Constrained_Delaunay_triangulation_2<K, TDS, Itag>    CDT;
 typedef CDT::Face_handle                                            Face_handle;
 typedef CDT::Point                                                  Point;
 typedef CDT::Edge                                                   Edge;
+typedef CDT::Face_iterator                                          Face_iterator;
 typedef CGAL::Polygon_2<K>                                          Polygon_2;
 
 // Function to perform constrained delaunay triangulation

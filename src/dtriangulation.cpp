@@ -20,7 +20,6 @@ void delaunay_const_triangulation(InputJSON input_data) {
     std::vector<Point> region_boundary;
     std::vector<std::pair<Point, Point>> extra_constraints;
     
-
     // Store polygon's points
     for (size_t i = 0; i < input_data.num_points; i++) {
         polygon.push_back(Point(input_data.points_x[i], input_data.points_y[i]));
@@ -37,12 +36,9 @@ void delaunay_const_triangulation(InputJSON input_data) {
     // Set region boundary
     cdt.insert_constraint(region_boundary.begin(), region_boundary.end(), true);
 
+    // Set polygon domain
     std::unordered_map<Face_handle, bool> in_domain_map;
     boost::associative_property_map<std::unordered_map<Face_handle,bool>> in_domain(in_domain_map);
-
-    //Mark facets that are inside the domain bounded by the polygon
-    
-
 
     // If additional contraints are given
     if (input_data.num_constraints) {
@@ -58,8 +54,10 @@ void delaunay_const_triangulation(InputJSON input_data) {
         }
     }
 
+    // Adding Steiner points
     eliminate_obtuse_triangles(cdt, polygon);
 
+    //Mark facets that are inside the domain bounded by the polygon
     CGAL::mark_domain_in_triangulation(cdt, in_domain);
 
     // Visualize CDT's results

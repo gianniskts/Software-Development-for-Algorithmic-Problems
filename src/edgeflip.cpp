@@ -14,16 +14,29 @@ bool is_obtuse(const Point& A, const Point& B, const Point& C) {
     return false;
 }
 
+int count_obtuse_triangles(CDT& cdt) {
+    int obtuse_triangle_count = 0;
+
+    for (Face_iterator fi = cdt.finite_faces_begin(); fi != cdt.finite_faces_end(); ++fi) {
+        CDT::Triangle triangle = cdt.triangle(fi);
+
+        if (is_obtuse(triangle.vertex(0), triangle.vertex(1), triangle.vertex(2))) {
+            obtuse_triangle_count++;
+        }
+    }
+
+    return obtuse_triangle_count;
+}
+
 // Function to eliminate obtuse triangles
 void eliminate_obtuse_triangles(CDT& cdt, Polygon_2& steiner_points) {
-    bool changes = true;
-    int iteration = 0;
-    const int max_iterations = 1000; // Prevent infinite loops
 
-    while (changes && iteration < max_iterations) {
-        changes = false;
-        iteration++;
+    int obtuse_triangles_begin = count_obtuse_triangles(cdt);
+    std::cout<<obtuse_triangles_begin<<std::endl;
+    int obtuse_triangles_end = 0;
 
+    while (obtuse_triangles_begin > obtuse_triangles_end) {
+        
         // Edge flipping to improve triangle quality
         CGAL::make_conforming_Delaunay_2(cdt);
         CGAL::make_conforming_Gabriel_2(cdt);
@@ -76,7 +89,9 @@ void eliminate_obtuse_triangles(CDT& cdt, Polygon_2& steiner_points) {
                     steiner_points.push_back(circumcenter);
                 }
 
-                changes = true;
+                // Re-calculate obtuse triangles
+                obtuse_triangles_end = count_obtuse_triangles(cdt);
+                std::cout<<obtuse_triangles_end<<std::endl;
                 break; // Exit loop to re-triangulate
             }
         }
