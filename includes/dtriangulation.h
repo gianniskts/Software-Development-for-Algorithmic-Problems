@@ -24,6 +24,7 @@ typedef CDT::Face_iterator                                          Face_iterato
 typedef CGAL::Polygon_2<K>                                          Polygon_2;
 
 // Function to perform constrained delaunay triangulation
-void delaunay_const_triangulation(InputJSON input_data);
+template <typename T>
+void delaunay_const_triangulation(InputJSON<T> input_data);
 
 #endif // DTRIANGULATION_H
