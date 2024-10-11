@@ -4,21 +4,23 @@
 #include <string>
 #include <vector>
 
-// Struct to capture input data
+// Templated struct to capture input data
+template <typename T>
 struct InputJSON {
     std::string instance_uid;
     int num_points;
-    std::vector<int> points_x;
-    std::vector<int> points_y;
-    std::vector<int> region_boundary;
+    std::vector<T> points_x;
+    std::vector<T> points_y;
+    std::vector<T> region_boundary;
     int num_constraints;
-    std::vector<std::pair<int, int>> additional_constraints;
+    std::vector<std::pair<T, T>> additional_constraints;
 };
 
 // Parse input file in JSON format
-InputJSON parse_file (const std::string& filename);
+template <typename T>
+InputJSON<T> parse_file(const std::string& filename);
 
-// Output project's results in JSON format
-void output_results (const std::string& filename, const InputJSON& input);
+template <typename T>
+void output_results(const std::string& filename, const InputJSON<T>& input);
 
 #endif // PARSING_H
