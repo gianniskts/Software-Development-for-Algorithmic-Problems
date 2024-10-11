@@ -2,15 +2,27 @@
 
 // Function to check if a triangle is obtuse
 bool is_obtuse(const Point& A, const Point& B, const Point& C) {
-    // Define the angles of the triangle (middle is the vertex)
-    double a1 = angle(A, B, C);
-    double a2 = angle(B, A, C);
-    double a3 = angle(A, C, B);
+    // Compute vectors
+    K::Vector_2 vAB = B - A;
+    K::Vector_2 vAC = C - A;
 
-    // Check if any angle is obtuse
-    if (a1 == CGAL::OBTUSE || a2 == CGAL::OBTUSE || a3 == CGAL::OBTUSE) {
-        return true;
-    }
+    // Compute dot product
+    double dot_product = vAB * vAC;
+
+    // If dot product is negative, angle at A is obtuse
+    if (dot_product < 0) return true;
+
+    // Repeat for other vertices
+    vAB = A - B;
+    vAC = C - B;
+    dot_product = vAB * vAC;
+    if (dot_product < 0) return true;
+
+    vAB = A - C;
+    vAC = B - C;
+    dot_product = vAB * vAC;
+    if (dot_product < 0) return true;
+
     return false;
 }
 
