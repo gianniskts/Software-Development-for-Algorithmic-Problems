@@ -1,7 +1,7 @@
 #ifndef DTRIANGULATION_H
 #define DTRIANGULATION_H
 
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Polygon_2.h>
 #include <CGAL/mark_domain_in_triangulation.h>
@@ -9,9 +9,10 @@
 #include <iostream>
 #include <unordered_map>
 #include <boost/property_map/property_map.hpp>
-#include "parsing.h"
 
-typedef CGAL::Exact_predicates_inexact_constructions_kernel         K;
+template <typename T> struct InputJSON;
+
+typedef CGAL::Exact_predicates_exact_constructions_kernel           K;
 typedef CGAL::Triangulation_vertex_base_2<K>                        Vb;
 typedef CGAL::Constrained_triangulation_face_base_2<K>              Fb;
 typedef CGAL::Triangulation_data_structure_2<Vb,Fb>                 TDS;
@@ -22,9 +23,10 @@ typedef CDT::Point                                                  Point;
 typedef CDT::Edge                                                   Edge;
 typedef CDT::Face_iterator                                          Face_iterator;
 typedef CGAL::Polygon_2<K>                                          Polygon_2;
+typedef CGAL::Triangle_2<K>                                         Triangle_2;
 
 // Function to perform constrained delaunay triangulation
 template <typename T>
-void delaunay_const_triangulation(InputJSON<T> input_data);
+Polygon_2 delaunay_const_triangulation(InputJSON<T> input_data);
 
 #endif // DTRIANGULATION_H

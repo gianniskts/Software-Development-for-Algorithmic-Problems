@@ -5,11 +5,12 @@
 
 #include "../includes/dtriangulation.h"
 #include "../includes/edgeflip.h"
+#include "../includes/parsing.h"
 #include "draw.h"
 
 // Function to perform delaunay triangulation and visualize results
 template <typename T>
-void delaunay_const_triangulation(InputJSON<T> input_data) {
+Polygon_2 delaunay_const_triangulation(InputJSON<T> input_data) {
     CDT cdt;
     Polygon_2 polygon;
     std::vector<Point> region_boundary;
@@ -55,6 +56,8 @@ void delaunay_const_triangulation(InputJSON<T> input_data) {
 
     // Visualize CDT's results
     CGAL::draw(cdt, in_domain);
+
+    return polygon;
 }
 
-template void delaunay_const_triangulation<int>(InputJSON<int> input_data);
+template Polygon_2 delaunay_const_triangulation<int>(InputJSON<int> input_data);

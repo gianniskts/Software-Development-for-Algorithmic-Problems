@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include "../includes/dtriangulation.h"
 
 // Templated struct to capture input data
 template <typename T>
@@ -21,6 +22,6 @@ template <typename T>
 InputJSON<T> parse_file(const std::string& filename);
 
 template <typename T>
-void output_results(const std::string& filename, const InputJSON<T>& input);
+void output_results(const std::string& filename, const InputJSON<T>& input, const Polygon_2& polygon);
 
 #endif // PARSING_H

@@ -2,27 +2,14 @@
 
 // Function to check if a triangle is obtuse
 bool is_obtuse(const Point& A, const Point& B, const Point& C) {
-    // Compute vectors
-    K::Vector_2 vAB = B - A;
-    K::Vector_2 vAC = C - A;
-
-    // Compute dot product
-    double dot_product = vAB * vAC;
-
-    // If dot product is negative, angle at A is obtuse
-    if (dot_product < 0) return true;
-
-    // Repeat for other vertices
-    vAB = A - B;
-    vAC = C - B;
-    dot_product = vAB * vAC;
-    if (dot_product < 0) return true;
-
-    vAB = A - C;
-    vAC = B - C;
-    dot_product = vAB * vAC;
-    if (dot_product < 0) return true;
-
+    // Define the angles of the triangle (middle is the vertex)
+    double a1 = angle(A, B, C);
+    double a2 = angle(B, A, C);
+    double a3 = angle(A, C, B);
+    // Check if any angle is obtuse
+    if (a1 == CGAL::OBTUSE || a2 == CGAL::OBTUSE || a3 == CGAL::OBTUSE) {
+        return true;
+    }
     return false;
 }
 
@@ -30,9 +17,9 @@ int count_obtuse_triangles(CDT& cdt) {
     int obtuse_triangle_count = 0;
 
     for (Face_iterator fi = cdt.finite_faces_begin(); fi != cdt.finite_faces_end(); ++fi) {
-        CDT::Triangle triangle = cdt.triangle(fi);
+        Triangle_2 triangle = cdt.triangle(fi);
 
-        if (is_obtuse(triangle.vertex(0), triangle.vertex(1), triangle.vertex(2))) {
+        if (is_obtuse(triangle[0], triangle[1], triangle[2])) {
             obtuse_triangle_count++;
         }
     }
@@ -72,17 +59,17 @@ void eliminate_obtuse_triangles(CDT& cdt, Polygon_2& steiner_points) {
                 }
 
                 // Insert Steiner point at the circumcenter of the triangle
-                CGAL::Triangle_2<K> triangle(p0, p1, p2);
+                Triangle_2 triangle(p0, p1, p2);
                 Point circumcenter = CGAL::circumcenter(triangle);
 
                 // Check if circumcenter is inside the domain
                 if (cdt.is_infinite(cdt.locate(circumcenter))) {
                     // If not, insert midpoint of longest edge
-                    double l01 = CGAL::squared_distance(p0, p1);
-                    double l12 = CGAL::squared_distance(p1, p2);
-                    double l20 = CGAL::squared_distance(p2, p0);
+                    K::FT l01 = CGAL::squared_distance(p0, p1);
+                    K::FT l12 = CGAL::squared_distance(p1, p2);
+                    K::FT l20 = CGAL::squared_distance(p2, p0);
 
-                    double max_length = std::max({l01, l12, l20});
+                    K::FT max_length = std::max({l01, l12, l20});
                     Point midpoint;
 
                     if (max_length == l01) {

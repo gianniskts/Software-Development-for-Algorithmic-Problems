@@ -58,7 +58,7 @@ InputJSON<T> parse_file(const std::string& filename) {
 
 // Function for results output
 template <typename T>
-void output_results(const std::string& filename, const InputJSON<T>& input) {
+void output_results(const std::string& filename, const InputJSON<T>& input, const Polygon_2& polygon) {
     boost::property_tree::ptree results;
     results.put("content_type", CONTENT_TYPE);
     results.put("instance_uid", input.instance_uid);
@@ -68,23 +68,58 @@ void output_results(const std::string& filename, const InputJSON<T>& input) {
     json::array steiner_points_y;
 
     // For demonstration, I just copy the input points as steiner points
-    for (const auto& x : input.points_x) {
+    /*for (const auto& x : input.points_x) {
         steiner_points_x.push_back(json::value(x));
     }
     for (const auto& y : input.points_y) {
         steiner_points_y.push_back(json::value(y));
+    }
+*/
+
+    for (size_t i = input.num_points; i < polygon.size(); ++i) {
+
+        const auto point_x = CGAL::exact(polygon[i].x());
+        const auto point_y = CGAL::exact(polygon[i].y());
+
+        std::cout << point_x << std::endl;
+
+        std::ostringstream ss;
+
+        if (point_x.get_den() == 1) {
+            ss << point_x;
+            steiner_points_x.emplace_back(stoi(ss.str()));
+        } else {
+            ss << point_x;
+            steiner_points_x.emplace_back(ss.str());
+        }
+        ss.str("");
+
+
+        if (point_y.get_den() == 1) {
+            ss << point_y;
+            steiner_points_y.emplace_back(stoi(ss.str()));
+        } else {
+            ss << point_y;
+            steiner_points_y.emplace_back(ss.str());
+        }
+        ss.str("");
+        
     }
 
     results.put("steiner_points_x", steiner_points_x);
     results.put("steiner_points_y", steiner_points_y);
 
     json::array edges;
+    /*
     for (const auto& constraint : input.additional_constraints) {
         json::array edge;
         edge.push_back(json::value(constraint.first));  // First point index
         edge.push_back(json::value(constraint.second)); // Second point index
         edges.push_back(edge);
-    }
+    }*/
+
+
+
     results.put("edges", edges);
 
     // Set results on output json file
@@ -97,4 +132,4 @@ void output_results(const std::string& filename, const InputJSON<T>& input) {
 }
 
 template InputJSON<int> parse_file<int>(const std::string& filename);
-template void output_results<int>(const std::string& filename, const InputJSON<int>& input);
+template void output_results<int>(const std::string& filename, const InputJSON<int>& input, const Polygon_2& polygon);
