@@ -2,8 +2,7 @@
 #include <sstream>
 #include <fstream>
 #include <boost/json/src.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
+
 #include "../includes/parsing.h"
 
 #define CONTENT_TYPE "CG_SHOP_2025_Solution"
@@ -59,32 +58,28 @@ InputJSON<T> parse_file(const std::string& filename) {
 // Function for results output
 template <typename T>
 void output_results(const std::string& filename, const InputJSON<T>& input, const Polygon_2& polygon) {
-    boost::property_tree::ptree results;
-    results.put("content_type", CONTENT_TYPE);
-    results.put("instance_uid", input.instance_uid);
-
-    // example
+    // Object to store output json
+    boost::json::object results;
+    
+    // Arrays to store results from the polygon
     json::array steiner_points_x;
     json::array steiner_points_y;
+    json::array edges;
 
-    // For demonstration, I just copy the input points as steiner points
-    /*for (const auto& x : input.points_x) {
-        steiner_points_x.push_back(json::value(x));
-    }
-    for (const auto& y : input.points_y) {
-        steiner_points_y.push_back(json::value(y));
-    }
-*/
+    // Set the values to corresponding fields
+    results["content_type"] = CONTENT_TYPE;
+    results["instance_uid"] = input.instance_uid;
 
+    // Iterate any added point to the initial polygon
     for (size_t i = input.num_points; i < polygon.size(); ++i) {
 
+        // Get exact coordinates
         const auto point_x = CGAL::exact(polygon[i].x());
         const auto point_y = CGAL::exact(polygon[i].y());
 
-        std::cout << point_x << std::endl;
-
         std::ostringstream ss;
 
+        // Check if the number is integer or rational and process accordingly
         if (point_x.get_den() == 1) {
             ss << point_x;
             steiner_points_x.emplace_back(stoi(ss.str()));
@@ -106,10 +101,11 @@ void output_results(const std::string& filename, const InputJSON<T>& input, cons
         
     }
 
-    results.put("steiner_points_x", steiner_points_x);
-    results.put("steiner_points_y", steiner_points_y);
+    // Set the values to the corresponding fields
+    results["steiner_points_x"] = steiner_points_x;
+    results["steiner_points_y"] = steiner_points_y;
 
-    json::array edges;
+    
     /*
     for (const auto& constraint : input.additional_constraints) {
         json::array edge;
@@ -118,17 +114,21 @@ void output_results(const std::string& filename, const InputJSON<T>& input, cons
         edges.push_back(edge);
     }*/
 
+    // Set the values to the corresponding field
+    results["edges"] = edges;
 
+    // Output results
+    std::string json_string = json::serialize(results);
+    std::ofstream json_file(filename);
 
-    results.put("edges", edges);
-
-    // Set results on output json file
-    std::ofstream output_file(filename);
-    if (!output_file.is_open()) {
+    // Security check if the file opens
+    if (json_file.is_open()) {
+        json_file << json_string;
+        json_file.close();
+    } else {
         throw std::runtime_error("Unable to open output JSON file for writing");
     }
-    boost::property_tree::write_json(output_file, results);
-    output_file.close();
+    
 }
 
 template InputJSON<int> parse_file<int>(const std::string& filename);
