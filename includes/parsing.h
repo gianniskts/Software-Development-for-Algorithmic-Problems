@@ -3,9 +3,9 @@
 
 #include <string>
 #include <vector>
-#include "../includes/dtriangulation.h"
+#include "../includes/PolygonManipulation.h"
 
-// Templated struct to capture input data
+// Struct to capture input data
 template <typename T>
 struct InputJSON {
     std::string instance_uid;
@@ -21,6 +21,7 @@ struct InputJSON {
 template <typename T>
 InputJSON<T> parse_file(const std::string& filename);
 
+// Set the results to JSON format
 template <typename T>
 void output_results(const std::string& filename, const InputJSON<T>& input, const Polygon_2& polygon);
 

@@ -2,8 +2,8 @@
 #include <string>
 #include <vector>
 #include "../includes/parsing.h"
-#include "../includes/dtriangulation.h"
-#include "../includes/edgeflip.h"
+#include "../includes/PolygonManipulation.h"
+#include "../includes/ActionFunctions.h"
 
 int main() {
     try {
@@ -11,7 +11,7 @@ int main() {
         Polygon_2 result;
 
         // Parse the input file
-        InputJSON<int> input_json = parse_file<int>("../cgshop2025_examples_ortho_10_ff68423e.json");
+        InputJSON<int> input_json = parse_file<int>("../input.json");
 
         // Perform constrained delaunay triangulation
         result = delaunay_const_triangulation<int>(input_json);

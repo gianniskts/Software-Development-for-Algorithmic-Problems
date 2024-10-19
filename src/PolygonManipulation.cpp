@@ -1,12 +1,8 @@
-// TODO: Mark anything outside the polygon as infinite
-// Rel: Check example 8.4 (you might need to redefine a class for the graphics)
-// TODO: Search how to add Steiner points !!
-// TODO: Fix output json after Steiner pts ~
-
-#include "../includes/dtriangulation.h"
-#include "../includes/edgeflip.h"
+#include "../includes/PolygonManipulation.h"
+#include "../includes/ActionFunctions.h"
 #include "../includes/parsing.h"
 #include "draw.h"
+
 
 // Function to perform delaunay triangulation and visualize results
 template <typename T>
@@ -30,9 +26,6 @@ Polygon_2 delaunay_const_triangulation(InputJSON<T> input_data) {
     // Set region boundary
     cdt.insert_constraint(region_boundary.begin(), region_boundary.end(), true);
 
-    // Set polygon domain
-    std::unordered_map<Face_handle, bool> in_domain_map;
-    boost::associative_property_map<std::unordered_map<Face_handle, bool>> in_domain(in_domain_map);
 
     // If additional contraints are given
     if (input_data.num_constraints) {
@@ -48,16 +41,29 @@ Polygon_2 delaunay_const_triangulation(InputJSON<T> input_data) {
         }
     }
 
-    // Adding Steiner points
-    eliminate_obtuse_triangles(cdt, polygon);
+    // Construct my triangulation with the given parameters
+    Triangulation triangulation(cdt, polygon);
+    triangulation.mark_domain();
+
+    int testaki = triangulation.count_obtuse_triangles();
+    std::cout << testaki << std::endl;
+    
+    // Attempt to eliminate obtuse triangles by adding Steiner points
+    eliminate_obtuse_triangles(triangulation);
 
     //Mark facets that are inside the domain bounded by the polygon
-    CGAL::mark_domain_in_triangulation(cdt, in_domain);
+    triangulation.mark_domain();
 
+    testaki = triangulation.count_obtuse_triangles();
+    std::cout << testaki << std::endl;
+    
     // Visualize CDT's results
-    CGAL::draw(cdt, in_domain);
+    CGAL::draw(triangulation.cdt, triangulation.in_domain);
 
-    return polygon;
+    testaki = triangulation.count_obtuse_triangles();
+    std::cout << testaki << std::endl;
+
+    return triangulation.polygon;
 }
 
 template Polygon_2 delaunay_const_triangulation<int>(InputJSON<int> input_data);

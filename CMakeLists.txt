@@ -38,8 +38,9 @@ include_directories(
 set(SOURCES
   main.cpp
   src/parsing.cpp
-  src/dtriangulation.cpp
-  src/edgeflip.cpp
+  src/PolygonManipulation.cpp
+  src/ActionFunctions.cpp
+  src/MyTriangulation.cpp
 )
 
 add_executable(main ${SOURCES})
