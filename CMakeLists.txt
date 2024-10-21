@@ -37,7 +37,7 @@ include_directories(
 
 set(SOURCES
   main.cpp
-  src/parsing.cpp
+  src/Parsing.cpp
   src/PolygonManipulation.cpp
   src/ActionFunctions.cpp
   src/MyTriangulation.cpp

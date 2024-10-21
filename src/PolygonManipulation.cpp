@@ -1,6 +1,6 @@
 #include "../includes/PolygonManipulation.h"
 #include "../includes/ActionFunctions.h"
-#include "../includes/parsing.h"
+#include "../includes/Parsing.h"
 #include "draw.h"
 
 
@@ -43,25 +43,18 @@ Polygon_2 delaunay_const_triangulation(InputJSON<T> input_data) {
 
     // Construct my triangulation with the given parameters
     Triangulation triangulation(cdt, polygon);
-    triangulation.mark_domain();
-
-    int testaki = triangulation.count_obtuse_triangles();
-    std::cout << testaki << std::endl;
     
     // Attempt to eliminate obtuse triangles by adding Steiner points
     eliminate_obtuse_triangles(triangulation);
 
-    //Mark facets that are inside the domain bounded by the polygon
-    triangulation.mark_domain();
-
-    testaki = triangulation.count_obtuse_triangles();
-    std::cout << testaki << std::endl;
+    int testaki = triangulation.count_obtuse_triangles();
+    std::cout << "-" << testaki << std::endl;
     
     // Visualize CDT's results
     CGAL::draw(triangulation.cdt, triangulation.in_domain);
 
     testaki = triangulation.count_obtuse_triangles();
-    std::cout << testaki << std::endl;
+    std::cout << "+" << testaki << std::endl;
 
     return triangulation.polygon;
 }

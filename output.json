@@ -1,1 +1,1 @@
-{"content_type":"CG_SHOP_2025_Solution","instance_uid":"test_1","steiner_points_x":["436/25",8,4],"steiner_points_y":["27/25",-3,2],"edges":[]}
+{"content_type":"CG_SHOP_2025_Solution","instance_uid":"test_1","steiner_points_x":["436/25",8,4],"steiner_points_y":["27/25",-3,2],"edges":[[0,10],[10,11],[11,12]]}

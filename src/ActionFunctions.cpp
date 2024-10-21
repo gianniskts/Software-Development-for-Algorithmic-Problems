@@ -91,6 +91,9 @@ bool is_edge_valid(const Point& v1, const Point& v2, const Polygon_2& polygon) {
 // Function to add Steiner points
 bool add_optimal_steiner(Triangulation& triangulation) {
     
+    //Mark facets that are inside the domain bounded by the polygon
+    triangulation.mark_domain();
+
     // Flag to indicate if the triangulation was improved
     bool improved = false;
 

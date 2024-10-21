@@ -3,7 +3,7 @@
 #include <fstream>
 #include <boost/json/src.hpp>
 
-#include "../includes/parsing.h"
+#include "../includes/Parsing.h"
 
 #define CONTENT_TYPE "CG_SHOP_2025_Solution"
 
@@ -106,13 +106,20 @@ void output_results(const std::string& filename, const InputJSON<T>& input, cons
     results["steiner_points_y"] = steiner_points_y;
 
     
-    /*
-    for (const auto& constraint : input.additional_constraints) {
-        json::array edge;
-        edge.push_back(json::value(constraint.first));  // First point index
-        edge.push_back(json::value(constraint.second)); // Second point index
-        edges.push_back(edge);
-    }*/
+    if (input.num_points < polygon.size()) {
+        json::array first_edge;
+        first_edge.emplace_back(0);
+        first_edge.emplace_back(input.num_points);
+    
+        edges.emplace_back(first_edge);
+
+        for (auto i = input.num_points; i < polygon.size() - 1; ++i) {
+            json::array edge;
+            edge.emplace_back(i);
+            edge.emplace_back(i + 1);
+            edges.emplace_back(edge);
+        }
+    }
 
     // Set the values to the corresponding field
     results["edges"] = edges;
