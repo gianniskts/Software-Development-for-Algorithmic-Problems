@@ -1,5 +1,8 @@
 #include "../includes/MyTriangulation.h"
 
+// Forward declaration
+bool is_obtuse(const Point& A, const Point& B, const Point& C);
+
 // Function to mark triangulation domain
 void Triangulation::mark_domain() {
     CGAL::mark_domain_in_triangulation(cdt, in_domain);
@@ -24,5 +27,6 @@ int Triangulation::count_obtuse_triangles() {
             }
         }
     }
+    
     return obtuse_triangle_count;
 }

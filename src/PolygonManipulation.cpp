@@ -7,6 +7,7 @@
 // Function to perform delaunay triangulation and visualize results
 template <typename T>
 Polygon_2 delaunay_const_triangulation(InputJSON<T> input_data) {
+    
     CDT cdt;
     Polygon_2 polygon;
     std::vector<Point> region_boundary;
@@ -26,7 +27,6 @@ Polygon_2 delaunay_const_triangulation(InputJSON<T> input_data) {
     // Set region boundary
     cdt.insert_constraint(region_boundary.begin(), region_boundary.end(), true);
 
-
     // If additional contraints are given
     if (input_data.num_constraints) {
         for (size_t i = 0; i < input_data.num_constraints; i++) {
@@ -41,20 +41,20 @@ Polygon_2 delaunay_const_triangulation(InputJSON<T> input_data) {
         }
     }
 
-    // Construct my triangulation with the given parameters
+    // Construct a triangulation instance with the given parameters
     Triangulation triangulation(cdt, polygon);
+    
+    //Mark facets that are inside the domain bounded by the polygon
+    triangulation.mark_domain();
+
+    triangulation.min_obtuse_triangles = triangulation.count_obtuse_triangles();
     
     // Attempt to eliminate obtuse triangles by adding Steiner points
     eliminate_obtuse_triangles(triangulation);
-
-    int testaki = triangulation.count_obtuse_triangles();
-    std::cout << "-" << testaki << std::endl;
     
     // Visualize CDT's results
     CGAL::draw(triangulation.cdt, triangulation.in_domain);
-
-    testaki = triangulation.count_obtuse_triangles();
-    std::cout << "+" << testaki << std::endl;
+    
 
     return triangulation.polygon;
 }

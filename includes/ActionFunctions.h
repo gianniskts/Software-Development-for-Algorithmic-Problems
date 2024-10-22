@@ -27,6 +27,9 @@ Point project_point_onto_line(const Point& A, const Point& B, const Point& C);
 // Function to check if an edge is bound
 bool is_edge_valid(const Point& v1, const Point& v2, const Polygon_2& polygon);
 
+// Function to find the midpoint of the largest edge formed by the points given
+Point get_midpoint(Point& p0, Point& p1, Point& p2);
+
 // Function to add Steiner points
 bool add_optimal_steiner(Triangulation& triangulation);
 

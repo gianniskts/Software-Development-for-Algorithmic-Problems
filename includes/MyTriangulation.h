@@ -6,6 +6,7 @@
 // Class to hold and access triangulation info
 class Triangulation {
 public:
+    int min_obtuse_triangles;
     CDT cdt;
     Polygon_2 polygon;
     std::unordered_map<CDT::Face_handle, bool> in_domain_map;
@@ -34,7 +35,5 @@ public:
     int count_obtuse_triangles();
 };
 
-// Forward declaration
-bool is_obtuse(const Point& A, const Point& B, const Point& C);
 
 #endif // TRIANGULATION_H

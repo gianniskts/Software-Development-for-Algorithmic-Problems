@@ -5,10 +5,7 @@
 
 // Function to check if a triangle is obtuse
 bool is_obtuse(const Point& A, const Point& B, const Point& C) {
-    
-    // Define the angles of the triangle (middle is the vertex)
 
-    // Check if any angle is obtuse
     if (CGAL::angle(A, B, C) == CGAL::OBTUSE || CGAL::angle(B, C, A) == CGAL::OBTUSE || CGAL::angle(C, A, B) == CGAL::OBTUSE) {
         return true;
     }
@@ -71,7 +68,7 @@ bool is_edge_valid(const Point& v1, const Point& v2, const Polygon_2& polygon) {
     Segment_2 edge(v1, v2);
     for (auto it = polygon.edges_begin(); it != polygon.edges_end(); ++it) {
         if (edge == *it) {
-            // Edge is part of the boundary, therefore valid
+            // If the Edge is part of the boundary it is valid
             return true;
         }
     }
@@ -88,6 +85,27 @@ bool is_edge_valid(const Point& v1, const Point& v2, const Polygon_2& polygon) {
     return true;
 }
 
+// Function to find the midpoint of the largest edge formed by the points given
+Point get_midpoint(Point& p0, Point& p1, Point& p2) {
+    // Calculate squared distances of the edges
+    K::FT lAB = CGAL::squared_distance(p0, p1);
+    K::FT lBC = CGAL::squared_distance(p1, p2);
+    K::FT lCA = CGAL::squared_distance(p2, p0);
+
+    // Calculate max and min edges
+    K::FT lmax = std::max({lAB, lBC, lCA});
+    K::FT lmin = std::min({lAB, lBC, lCA});
+
+    // Calculate the midpoint of the largest edge
+    if (lmax == lAB) {
+        return CGAL::midpoint(p0, p1);
+    } else if (lmax == lBC) {
+        return CGAL::midpoint(p1, p2);
+    } else {
+        return CGAL::midpoint(p2, p0);
+    }
+}
+
 // Function to add Steiner points
 bool add_optimal_steiner(Triangulation& triangulation) {
     
@@ -98,14 +116,14 @@ bool add_optimal_steiner(Triangulation& triangulation) {
     bool improved = false;
 
     Point best_steiner_point;
-    int min_obtuse_triangles = triangulation.count_obtuse_triangles();
+    int min_obtuse_triangles = triangulation.min_obtuse_triangles;
 
     // Store triangluation states
     std::priority_queue<TriangulationState> pq;    
     
+    // Data structures to store points
     std::vector<Point> initial_steiner_points;
     initial_steiner_points.assign(triangulation.polygon.begin(), triangulation.polygon.end());
-
     std::vector<Point> current_steiner_points;
 
     // Store the initial obtuse triangles
@@ -115,9 +133,6 @@ bool add_optimal_steiner(Triangulation& triangulation) {
             obtuse_faces.push_back(face_it);
         }
     }
-    
-    // For debugging
-    std::cout << min_obtuse_triangles << std::endl;
 
     // Set the initial triangulation as a base line
     pq.push({initial_steiner_points, min_obtuse_triangles});
@@ -148,33 +163,16 @@ bool add_optimal_steiner(Triangulation& triangulation) {
             edge_vertex_2 = p1;
         }
 
-        // Calculate squared distances of the edges
-        K::FT lAB = CGAL::squared_distance(p0, p1);
-        K::FT lBC = CGAL::squared_distance(p1, p2);
-        K::FT lCA = CGAL::squared_distance(p2, p0);
-
-        // Calculate max and min edges
-        K::FT lmax = std::max({lAB, lBC, lCA});
-        K::FT lmin = std::min({lAB, lBC, lCA});
-
         // Get multiple candidate steiner points positions
         Triangle_2 triangle(obtuse_angle, edge_vertex_1, edge_vertex_2);
         Point circumcenter = CGAL::circumcenter(triangle);
         Point centroid = CGAL::centroid(triangle);
         Point projection = project_point_onto_line(obtuse_angle, edge_vertex_1, edge_vertex_2);
-        Point midpoint;
+        Point midpoint = get_midpoint(p0, p1, p2);
         Point convex_centroid;
 
-        std::vector<Point> candidate_points = {centroid};
-
-        // Calculate the midpoint of the largest edge
-        if (lmax == lAB) {
-            midpoint = CGAL::midpoint(p0, p1);
-        } else if (lmax == lBC) {
-            midpoint = CGAL::midpoint(p1, p2);
-        } else {
-            midpoint = CGAL::midpoint(p2, p0);
-        }
+        // Vector to store candidate Steiner points
+        std::vector<Point> candidate_points;
 
         // For each edge of the obtuse triangle check its neighboring triangle
         for (int i = 0; i < 3; ++i) {
@@ -185,15 +183,15 @@ bool add_optimal_steiner(Triangulation& triangulation) {
                 // Check if the obtuse triangle and its neighbor form a convex hull
                 if (is_convex_hull(fh, neighbor_fh)) {
                     // Get the vertices of the triangles
-                    Point shared_v1 = fh->vertex((i+1) % 3)->point();
-                    Point shared_v2 = fh->vertex((i+2) % 3)->point();
+                    Point shared_v1 = fh->vertex((i + 1) % 3)->point();
+                    Point shared_v2 = fh->vertex((i + 2) % 3)->point();
                     Point tri1_opposite = fh->vertex(i)->point();
                     Point tri2_opposite = neighbor_fh->vertex(neighbor_fh->index(fh->vertex(i)))->point();
 
                     // Compute the centroid of the quadrilateral
                     convex_centroid = CGAL::centroid(shared_v1, shared_v2, tri1_opposite, tri2_opposite);
                     
-                    candidate_points.push_back(convex_centroid);
+                    //candidate_points.push_back(convex_centroid);
                 }
             }
         }
@@ -202,54 +200,70 @@ bool add_optimal_steiner(Triangulation& triangulation) {
         if (is_edge_valid(edge_vertex_1, edge_vertex_2, triangulation.polygon)) {
             candidate_points.push_back(midpoint);
         }
+        
+        // If circumcenter is infinite, then get the centroid
         if (!(triangulation.cdt.is_infinite(triangulation.cdt.locate(circumcenter)))) {
             candidate_points.push_back(circumcenter);
+        } else {
+            candidate_points.push_back(centroid);
         }
+
+        // If inbound, get the projection
         if (is_edge_valid(edge_vertex_1, edge_vertex_2, triangulation.polygon)) {
-            candidate_points.push_back(projection);
+            //candidate_points.push_back(projection);
         }
 
         // Iterate through the candidate points
         for (Point& candidate : candidate_points) {
             // Create a copy of the triangulation for testing
             Triangulation tcopy(triangulation);
+            
             tcopy.mark_domain();
             tcopy.cdt.insert(candidate);
+            tcopy.mark_domain();
 
             int obtuse_count = tcopy.count_obtuse_triangles();
             
-            // For debugging
-            std::cout << obtuse_count << std::endl;
-            
-            // If this approach eliminates obtuse triangles, store it
+            // If a candidate point eliminates obtuse triangles, store it
             if (obtuse_count < min_obtuse_triangles) {
-                std::cout << "jere" << std::endl;
-                min_obtuse_triangles = obtuse_count;
+                // Update values
                 best_steiner_point = candidate;
+                min_obtuse_triangles = obtuse_count;
                 current_steiner_points.push_back(best_steiner_point);
                 pq.push({current_steiner_points, obtuse_count});
+                
                 improved = true;
             }
         }
-
     }
 
     // Retrieve the state with the least obtuse triangles
     TriangulationState best_state = pq.top();
 
-    // For debugging
-    std::cout << "!" << best_state.obtuse_triangle_count << std::endl;
-
     // If the Steiner point addition improved the triangulation
     if (improved) {
-        // Add the Steiner points at the initial triangulation
+        
+        // Create another test copy
+        Triangulation tcopy2(triangulation);
+        tcopy2.mark_domain();
+        // Add the Steiner points
         for (auto i = 0; i < best_state.steiner_points.size(); ++i) {
-            triangulation.cdt.insert(best_state.steiner_points[i]);
-            triangulation.polygon.push_back(best_state.steiner_points[i]);
-            
-            // For debugging
-            std::cout << "?" << best_state.steiner_points[i] << std::endl;
+            tcopy2.cdt.insert(best_state.steiner_points[i]);
+            tcopy2.polygon.push_back(best_state.steiner_points[i]);
         }
+
+        // Check if the addition of points affects the number of obtuse triangles afterwards
+        if (tcopy2.count_obtuse_triangles() < triangulation.count_obtuse_triangles()) {
+            for (auto i = 0; i < best_state.steiner_points.size(); ++i) {
+                triangulation.cdt.insert(best_state.steiner_points[i]);
+                triangulation.polygon.push_back(best_state.steiner_points[i]);
+                triangulation.mark_domain();
+            }
+            
+            // Update the threshold
+            triangulation.min_obtuse_triangles = best_state.obtuse_triangle_count;
+        }
+
     }
 
     return improved;
@@ -263,4 +277,7 @@ void eliminate_obtuse_triangles(Triangulation& triangulation) {
     while (improved) {
         improved = add_optimal_steiner(triangulation);
     }
+
+    // Result print
+    std::cout << "Total obtuse triangles: " << triangulation.count_obtuse_triangles() << std::endl;
 }
