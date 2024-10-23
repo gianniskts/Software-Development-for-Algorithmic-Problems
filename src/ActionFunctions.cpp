@@ -12,6 +12,44 @@ bool is_obtuse(const Point& A, const Point& B, const Point& C) {
     return false;
 }
 
+// Function to try edge flips
+void edge_flip(Triangulation& triangulation) {
+
+    bool flipped = true;
+    while (flipped) {
+        flipped = false;
+        // Iterate through all triangles
+        for (CDT::Finite_faces_iterator fit = triangulation.cdt.finite_faces_begin(); fit != triangulation.cdt.finite_faces_end(); ++fit) {
+            Face_handle fh = fit;
+
+            // Check if the triangle is obtuse
+            if (is_obtuse(fh->vertex(0)->point(), fh->vertex(1)->point(), fh->vertex(2)->point())) {
+                // For each neighbor
+                for (int i = 0; i < 3; ++i) {
+                    if (triangulation.cdt.is_flipable(fh, i)) {
+                        // Count obtuse triangles before the flip
+                        int before_flip = triangulation.count_obtuse_triangles();
+
+                        // Flip the edge
+                        triangulation.cdt.flip(fh, i);
+
+                        // Count obtuse triangles after the flip
+                        int after_flip = triangulation.count_obtuse_triangles();
+
+                        // Flip back if the number of obtuse triangles has not decreased
+                        if (after_flip >= before_flip) {
+                            triangulation.cdt.flip(fh, i);
+                        } else {
+                            flipped = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 // Function to check if two triangles form a convex quadrilateral
 bool is_convex_hull(Face_handle fh1, Face_handle fh2) {
     
@@ -36,7 +74,7 @@ bool is_convex_hull(Face_handle fh1, Face_handle fh2) {
 
 // Function to project point A onto the line defined by B and C
 Point project_point_onto_line(const Point& A, const Point& B, const Point& C) {
-    
+
     // Vector from B to C
     K::Vector_2 BC = C - B;
     // Vector from B to A
@@ -64,24 +102,7 @@ bool is_edge_valid(const Point& v1, const Point& v2, const Polygon_2& polygon) {
         return false;
     }
 
-    // Check if the edge is part of the polygon boundary
-    Segment_2 edge(v1, v2);
-    for (auto it = polygon.edges_begin(); it != polygon.edges_end(); ++it) {
-        if (edge == *it) {
-            // If the Edge is part of the boundary it is valid
-            return true;
-        }
-    }
-
-    // Check if the edge intersects any polygon edges
-    for (auto it = polygon.edges_begin(); it != polygon.edges_end(); ++it) {
-        if (CGAL::do_intersect(edge, *it)) {
-            // Edge intersects with the polygon boundary
-            return false;
-        }
-    }
-
-    // Edge is valid if no intersections were found and vertices are valid
+    // Edge is valid if vertices are valid
     return true;
 }
 
@@ -210,7 +231,7 @@ bool add_optimal_steiner(Triangulation& triangulation) {
 
         // If inbound, get the projection
         if (is_edge_valid(edge_vertex_1, edge_vertex_2, triangulation.polygon)) {
-            //candidate_points.push_back(projection);
+            candidate_points.push_back(projection);
         }
 
         // Iterate through the candidate points

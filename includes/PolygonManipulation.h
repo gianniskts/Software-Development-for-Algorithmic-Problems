@@ -27,7 +27,7 @@ typedef CDT::Edge                                                   Edge;
 typedef CDT::Face_iterator                                          Face_iterator;
 typedef CGAL::Polygon_2<K>                                          Polygon_2;
 typedef CGAL::Triangle_2<K>                                         Triangle_2;
-typedef CGAL::Segment_2<K> Segment_2;
+typedef CGAL::Segment_2<K>                                          Segment_2;
 
 // Function to perform constrained delaunay triangulation
 template <typename T>

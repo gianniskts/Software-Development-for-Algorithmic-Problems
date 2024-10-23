@@ -49,6 +49,9 @@ Polygon_2 delaunay_const_triangulation(InputJSON<T> input_data) {
 
     triangulation.min_obtuse_triangles = triangulation.count_obtuse_triangles();
     
+    // Try edge flips on obtuse triangles
+    edge_flip(triangulation);
+
     // Attempt to eliminate obtuse triangles by adding Steiner points
     eliminate_obtuse_triangles(triangulation);
     

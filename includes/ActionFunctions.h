@@ -18,6 +18,9 @@ struct TriangulationState {
 // Function to check if a triangle is obtuse
 bool is_obtuse(const Point& A, const Point& B, const Point& C);
 
+// Function to try edge flips on cdt
+void edge_flip(Triangulation& triangulation);
+
 // Function to check if two triangles form a convex quadrilateral
 bool is_convex_hull(Face_handle fh1, Face_handle fh2);
 
