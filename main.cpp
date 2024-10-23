@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
         result = delaunay_const_triangulation<int>(input_json);
 
         // Output the results to a JSON file
-        output_results<int>("../output.json", input_json, result);
+        output_results<int>("output.json", input_json, result);
 
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;

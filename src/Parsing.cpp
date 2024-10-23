@@ -58,6 +58,15 @@ InputJSON<T> parse_file(const std::string& filename) {
 // Function for results output
 template <typename T>
 void output_results(const std::string& filename, const InputJSON<T>& input, const Polygon_2& polygon) {
+    
+    std::ofstream file(filename);
+
+    // Check if file was opened successfully
+    if (!file.is_open()) {
+        std::cerr << "Error: Could not open file '" << filename << "' for writing." << std::endl;
+        return;
+    }
+    
     // Object to store output json
     boost::json::object results;
     
@@ -127,12 +136,12 @@ void output_results(const std::string& filename, const InputJSON<T>& input, cons
 
     // Output results
     std::string json_string = json::serialize(results);
-    std::ofstream json_file(filename);
+    //std::ofstream json_file(filename);
 
     // Security check if the file opens
-    if (json_file.is_open()) {
-        json_file << json_string;
-        json_file.close();
+    if (file.is_open()) {
+        file << json_string;
+        file.close();
     } else {
         throw std::runtime_error("Unable to open output JSON file for writing");
     }
