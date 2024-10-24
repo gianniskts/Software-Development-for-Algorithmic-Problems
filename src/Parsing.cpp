@@ -114,13 +114,21 @@ void output_results(const std::string& filename, const InputJSON<T>& input, cons
     results["steiner_points_x"] = steiner_points_x;
     results["steiner_points_y"] = steiner_points_y;
 
-    // Add the edges from steiner points;
-    int total_points = polygon.size();
-    for (auto i = 0; i < total_points; ++i) {
-        json::array edge;
-        edge.emplace_back(i);
-        edge.emplace_back((i + 1) % total_points);
-        edges.emplace_back(edge);
+    // Add the edges from steiner points
+    if (input.num_points < polygon.size()) {
+        // First element of the list
+        json::array first_edge;
+        first_edge.emplace_back(0);
+        first_edge.emplace_back(input.num_points);
+    
+        edges.emplace_back(first_edge);
+
+        for (auto i = input.num_points; i < polygon.size() - 1; ++i) {
+            json::array edge;
+            edge.emplace_back(i);
+            edge.emplace_back(i + 1);
+            edges.emplace_back(edge);
+        }
     }
 
     // Set the values to the corresponding field
