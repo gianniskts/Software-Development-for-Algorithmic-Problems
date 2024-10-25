@@ -10,8 +10,7 @@
 namespace json = boost::json;
 
 // Function to parse JSON file
-template <typename T>
-InputJSON<T> parse_file(const std::string& filename) {
+InputJSON parse_file(const std::string& filename) {
     // Open the file
     std::ifstream file(filename);
     if (!file.is_open()) {
@@ -27,21 +26,21 @@ InputJSON<T> parse_file(const std::string& filename) {
     json::object json_obj = json_value.as_object();
 
     // Populate the struct
-    InputJSON<T> data;
+    InputJSON data;
     data.instance_uid = json::value_to<std::string>(json_obj["instance_uid"]);
     data.num_points = json::value_to<int>(json_obj["num_points"]);
 
     // Parse the arrays
     for (const auto& val : json_obj["points_x"].as_array()) {
-        data.points_x.push_back(json::value_to<T>(val));
+        data.points_x.push_back(json::value_to<int>(val));
     }
 
     for (const auto& val : json_obj["points_y"].as_array()) {
-        data.points_y.push_back(json::value_to<T>(val));
+        data.points_y.push_back(json::value_to<int>(val));
     }
 
     for (const auto& val : json_obj["region_boundary"].as_array()) {
-        data.region_boundary.push_back(json::value_to<T>(val));
+        data.region_boundary.push_back(json::value_to<int>(val));
     }
 
     data.num_constraints = json::value_to<int>(json_obj["num_constraints"]);
@@ -49,15 +48,14 @@ InputJSON<T> parse_file(const std::string& filename) {
     // Parse additional_constraints, which is a list of lists
     for (const auto& constraint : json_obj["additional_constraints"].as_array()) {
         auto pair = constraint.as_array();
-        data.additional_constraints.emplace_back(json::value_to<T>(pair[0]), json::value_to<T>(pair[1]));
+        data.additional_constraints.emplace_back(json::value_to<int>(pair[0]), json::value_to<int>(pair[1]));
     }
 
     return data;
 }
 
 // Function for results output
-template <typename T>
-void output_results(const std::string& filename, const InputJSON<T>& input, const Polygon_2& polygon) {
+void output_results(const std::string& filename, const InputJSON& input, const Polygon_2& polygon) {
     
     std::ofstream file(filename);
 
@@ -147,6 +145,3 @@ void output_results(const std::string& filename, const InputJSON<T>& input, cons
     }
     
 }
-
-template InputJSON<int> parse_file<int>(const std::string& filename);
-template void output_results<int>(const std::string& filename, const InputJSON<int>& input, const Polygon_2& polygon);

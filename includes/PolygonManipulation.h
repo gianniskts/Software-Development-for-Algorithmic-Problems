@@ -12,7 +12,7 @@
 #include <unordered_map>
 #include <boost/property_map/property_map.hpp>
 
-template <typename T> struct InputJSON;
+struct InputJSON;
 
 // Necessary declarations
 typedef CGAL::Exact_predicates_exact_constructions_kernel           K;
@@ -30,7 +30,6 @@ typedef CGAL::Triangle_2<K>                                         Triangle_2;
 typedef CGAL::Segment_2<K>                                          Segment_2;
 
 // Function to perform constrained delaunay triangulation
-template <typename T>
-Polygon_2 delaunay_const_triangulation(InputJSON<T> input_data);
+Polygon_2 delaunay_const_triangulation(const InputJSON input_data);
 
 #endif // POLYGONMANIPULATION_H

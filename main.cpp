@@ -13,13 +13,13 @@ int main(int argc, char* argv[]) {
         std::string json_file = argv[1];
 
         // Parse the input file
-        InputJSON<int> input_json = parse_file<int>(json_file);
+        InputJSON input_json = parse_file(json_file);
 
         // Perform constrained delaunay triangulation
-        result = delaunay_const_triangulation<int>(input_json);
+        result = delaunay_const_triangulation(input_json);
 
         // Output the results to a JSON file
-        output_results<int>("output.json", input_json, result);
+        output_results("output.json", input_json, result);
 
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;

@@ -5,8 +5,7 @@
 
 
 // Function to perform delaunay triangulation and visualize results
-template <typename T>
-Polygon_2 delaunay_const_triangulation(InputJSON<T> input_data) {
+Polygon_2 delaunay_const_triangulation(const InputJSON input_data) {
     
     CDT cdt;
     Polygon_2 polygon;
@@ -14,13 +13,13 @@ Polygon_2 delaunay_const_triangulation(InputJSON<T> input_data) {
     std::vector<std::pair<Point, Point>> extra_constraints;
     
     // Store polygon's points
-    for (size_t i = 0; i < input_data.num_points; i++) {
+    for (size_t i = 0; i < input_data.num_points; ++i) {
         polygon.push_back(Point(input_data.points_x[i], input_data.points_y[i]));
         cdt.insert(polygon[i]);
     }
 
     // Store boundary points
-    for (size_t i = 0; i < input_data.region_boundary.size(); i++) {
+    for (size_t i = 0; i < input_data.region_boundary.size(); ++i) {
         region_boundary.push_back(polygon[input_data.region_boundary[i]]);
     }
 
@@ -29,14 +28,14 @@ Polygon_2 delaunay_const_triangulation(InputJSON<T> input_data) {
 
     // If additional contraints are given
     if (input_data.num_constraints) {
-        for (size_t i = 0; i < input_data.num_constraints; i++) {
+        for (size_t i = 0; i < input_data.num_constraints; ++i) {
             Point p1 = polygon[input_data.additional_constraints[i].first];
             Point p2 = polygon[input_data.additional_constraints[i].second];
             extra_constraints.push_back(std::make_pair(p1, p2));
         }
 
         // Set extra constraints
-        for (size_t i = 0; i < extra_constraints.size(); i++) {
+        for (size_t i = 0; i < extra_constraints.size(); ++i) {
             cdt.insert_constraint(extra_constraints[i].first, extra_constraints[i].second);
         }
     }
@@ -61,5 +60,3 @@ Polygon_2 delaunay_const_triangulation(InputJSON<T> input_data) {
 
     return triangulation.polygon;
 }
-
-template Polygon_2 delaunay_const_triangulation<int>(InputJSON<int> input_data);

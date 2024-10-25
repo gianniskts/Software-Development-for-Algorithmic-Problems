@@ -107,11 +107,11 @@ bool is_edge_valid(const Point& v1, const Point& v2, const Polygon_2& polygon) {
 }
 
 // Function to find the midpoint of the largest edge formed by the points given
-Point get_midpoint(Point& p0, Point& p1, Point& p2) {
+Point get_midpoint(const Point& A, const Point& B, const Point& C) {
     // Calculate squared distances of the edges
-    K::FT lAB = CGAL::squared_distance(p0, p1);
-    K::FT lBC = CGAL::squared_distance(p1, p2);
-    K::FT lCA = CGAL::squared_distance(p2, p0);
+    K::FT lAB = CGAL::squared_distance(A, B);
+    K::FT lBC = CGAL::squared_distance(B, C);
+    K::FT lCA = CGAL::squared_distance(C, A);
 
     // Calculate max and min edges
     K::FT lmax = std::max({lAB, lBC, lCA});
@@ -119,11 +119,11 @@ Point get_midpoint(Point& p0, Point& p1, Point& p2) {
 
     // Calculate the midpoint of the largest edge
     if (lmax == lAB) {
-        return CGAL::midpoint(p0, p1);
+        return CGAL::midpoint(A, B);
     } else if (lmax == lBC) {
-        return CGAL::midpoint(p1, p2);
+        return CGAL::midpoint(B, C);
     } else {
-        return CGAL::midpoint(p2, p0);
+        return CGAL::midpoint(C, A);
     }
 }
 
