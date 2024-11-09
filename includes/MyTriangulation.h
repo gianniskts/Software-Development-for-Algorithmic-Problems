@@ -31,6 +31,9 @@ public:
     // Function to check if a triangle is inside the boundary
     bool is_face_in_domain(CDT::Face_handle face) const;
 
+    // Function to check if an edge is inside the boundary
+    bool is_edge_in_domain(CDT::Edge edge) const;
+
     // Function to count triangulation's obtuse triangles
     int count_obtuse_triangles();
 };

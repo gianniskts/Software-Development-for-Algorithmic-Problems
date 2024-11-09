@@ -13,6 +13,7 @@
 #include <boost/property_map/property_map.hpp>
 
 struct InputJSON;
+class Triangulation;
 
 // Necessary declarations
 typedef CGAL::Exact_predicates_exact_constructions_kernel           K;
@@ -28,8 +29,9 @@ typedef CDT::Face_iterator                                          Face_iterato
 typedef CGAL::Polygon_2<K>                                          Polygon_2;
 typedef CGAL::Triangle_2<K>                                         Triangle_2;
 typedef CGAL::Segment_2<K>                                          Segment_2;
+typedef CDT::Vertex_handle                                          Vertex_handle;
 
 // Function to perform constrained delaunay triangulation
-Polygon_2 delaunay_const_triangulation(const InputJSON input_data);
+Triangulation delaunay_const_triangulation(const InputJSON input_data);
 
 #endif // POLYGONMANIPULATION_H

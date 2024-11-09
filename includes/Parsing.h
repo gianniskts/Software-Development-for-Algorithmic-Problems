@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "../includes/PolygonManipulation.h"
+#include "../includes/MyTriangulation.h"
 
 // Struct to capture input data
 struct InputJSON {
@@ -20,6 +21,6 @@ struct InputJSON {
 InputJSON parse_file(const std::string& filename);
 
 // Set the results to JSON format
-void output_results(const std::string& filename, const InputJSON& input, const Polygon_2& polygon);
+void output_results(const std::string& filename, const InputJSON& input, const Triangulation& triangulation);
 
 #endif // PARSING_H

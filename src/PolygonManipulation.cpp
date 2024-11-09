@@ -5,7 +5,7 @@
 
 
 // Function to perform delaunay triangulation and visualize results
-Polygon_2 delaunay_const_triangulation(const InputJSON input_data) {
+Triangulation delaunay_const_triangulation(const InputJSON input_data) {
     
     CDT cdt;
     Polygon_2 polygon;
@@ -58,5 +58,5 @@ Polygon_2 delaunay_const_triangulation(const InputJSON input_data) {
     CGAL::draw(triangulation.cdt, triangulation.in_domain);
     
 
-    return triangulation.polygon;
+    return triangulation;
 }

@@ -55,7 +55,7 @@ InputJSON parse_file(const std::string& filename) {
 }
 
 // Function for results output
-void output_results(const std::string& filename, const InputJSON& input, const Polygon_2& polygon) {
+void output_results(const std::string& filename, const InputJSON& input, const Triangulation& triangulation) {
     
     std::ofstream file(filename);
 
@@ -77,12 +77,17 @@ void output_results(const std::string& filename, const InputJSON& input, const P
     results["content_type"] = CONTENT_TYPE;
     results["instance_uid"] = input.instance_uid;
 
+    std::vector<Point> points;
+    for (auto vit = triangulation.cdt.vertices_begin(); vit != triangulation.cdt.vertices_end(); ++vit) {
+        points.push_back(vit->point());
+    }
+
     // Iterate any added point to the initial polygon
-    for (size_t i = input.num_points; i < polygon.size(); ++i) {
+    for (size_t i = input.num_points; i < points.size(); ++i) {
 
         // Get exact coordinates
-        const auto point_x = CGAL::exact(polygon[i].x());
-        const auto point_y = CGAL::exact(polygon[i].y());
+        const auto point_x = CGAL::exact(points[i].x());
+        const auto point_y = CGAL::exact(points[i].y());
 
         std::ostringstream ss;
 
@@ -112,21 +117,21 @@ void output_results(const std::string& filename, const InputJSON& input, const P
     results["steiner_points_x"] = steiner_points_x;
     results["steiner_points_y"] = steiner_points_y;
 
-    // Add the edges from steiner points
-    if (input.num_points < polygon.size()) {
-        // First element of the list
-        json::array first_edge;
-        first_edge.emplace_back(0);
-        first_edge.emplace_back(input.num_points);
-    
-        edges.emplace_back(first_edge);
+    // Iterate through the edges of the result triangulation store the points indices
+    for (auto eit = triangulation.cdt.edges_begin(); eit != triangulation.cdt.edges_end(); ++eit) {
+        const Edge& edge = *eit;
 
-        for (auto i = input.num_points; i < polygon.size() - 1; ++i) {
-            json::array edge;
-            edge.emplace_back(i);
-            edge.emplace_back(i + 1);
-            edges.emplace_back(edge);
+        // Get all edges of triangulation (constraints as well)
+        if (triangulation.is_edge_in_domain(edge) || triangulation.cdt.is_constrained(edge)) {
+            auto source_it = std::find(points.begin(), points.end() - 1, edge.first->vertex((edge.second + 1) % 3)->point());
+            auto target_it = std::find(points.begin(), points.end() - 1, edge.first->vertex((edge.second + 2) % 3)->point());
+
+            int source_index = std::distance(points.begin(), source_it);
+            int target_index = std::distance(points.begin(), target_it);
+
+            edges.emplace_back(json::array{source_index, target_index});
         }
+        
     }
 
     // Set the values to the corresponding field
@@ -134,7 +139,6 @@ void output_results(const std::string& filename, const InputJSON& input, const P
 
     // Output results
     std::string json_string = json::serialize(results);
-    //std::ofstream json_file(filename);
 
     // Security check if the file opens
     if (file.is_open()) {
