@@ -28,7 +28,7 @@ bool Triangulation::is_edge_in_domain(CDT::Edge edge) const {
 }
 
 // Function to count triangulation's obtuse triangles
-int Triangulation::count_obtuse_triangles() {
+int Triangulation::count_obtuse_triangles() const {
     int obtuse_triangle_count = 0;
 
     // Iterate over finite faces
