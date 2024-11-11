@@ -1,10 +1,8 @@
-// include/ActionFunctions.h
-
 #ifndef ACTION_FUNCTIONS_H
 #define ACTION_FUNCTIONS_H
 
-#include "Triangulation.h"
-#include "PolygonManipulation.h"
+#include "../includes/MyTriangulation.h"
+#include "../includes/PolygonManipulation.h"
 
 // Structure to store triangulation states
 struct TriangulationState {
@@ -20,13 +18,16 @@ struct TriangulationState {
 // Function to check if a triangle is obtuse
 bool is_obtuse(const Point& A, const Point& B, const Point& C);
 
-// Function to try edge flips on the triangulation
+// Function to try edge flips on cdt
 void edge_flip(Triangulation& triangulation);
+
+// Function to check if two triangles form a convex quadrilateral
+bool is_convex_hull(Face_handle fh1, Face_handle fh2);
 
 // Function to project point A onto the line defined by B and C
 Point project_point_onto_line(const Point& A, const Point& B, const Point& C);
 
-// Function to check if an edge is valid (inside the polygon)
+// Function to check if an edge is bound
 bool is_edge_valid(const Point& v1, const Point& v2, const Polygon_2& polygon);
 
 // Function to find the midpoint of the largest edge formed by the points given

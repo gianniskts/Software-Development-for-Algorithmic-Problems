@@ -1,6 +1,4 @@
-// src/Triangulation.cpp
-
-#include "../include/Triangulation.h"
+#include "../includes/MyTriangulation.h"
 
 // Forward declaration
 bool is_obtuse(const Point& A, const Point& B, const Point& C);
@@ -15,7 +13,6 @@ bool Triangulation::is_face_in_domain(CDT::Face_handle face) const {
     return get(in_domain, face);
 }
 
-// Function to check if an edge is inside the boundary
 bool Triangulation::is_edge_in_domain(CDT::Edge edge) const {
     // Get the first and second faces that share the edge
     auto face1 = edge.first;
@@ -44,6 +41,6 @@ int Triangulation::count_obtuse_triangles() {
             }
         }
     }
-
+    
     return obtuse_triangle_count;
 }

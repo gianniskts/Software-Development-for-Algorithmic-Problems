@@ -21,7 +21,6 @@ endif()
 # Boost and its components
 find_package(Boost REQUIRED)
 
-
 if (NOT Boost_FOUND)
 
   message(STATUS "This project requires the Boost library, and will not be compiled.")
@@ -33,7 +32,7 @@ endif()
 # include for local directory
 include_directories(
   BEFORE 
-  ${CMAKE_CURRENT_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/includes
 )
 
 set(SOURCES
@@ -41,7 +40,7 @@ set(SOURCES
   src/Parsing.cpp
   src/PolygonManipulation.cpp
   src/ActionFunctions.cpp
-  src/Triangulation.cpp
+  src/MyTriangulation.cpp
 )
 
 add_executable(main ${SOURCES})

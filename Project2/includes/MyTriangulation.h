@@ -1,9 +1,7 @@
-// include/Triangulation.h
-
 #ifndef TRIANGULATION_H
 #define TRIANGULATION_H
 
-#include "PolygonManipulation.h"
+#include "../includes/PolygonManipulation.h"
 
 // Class to hold and access triangulation info
 class Triangulation {
@@ -24,7 +22,7 @@ public:
           polygon(other.polygon),  // Copy the Polygon
           in_domain_map(other.in_domain_map),  // Copy the in_domain_map
           in_domain(in_domain_map) {  // Reinitialize the property map
-
+        
     }
 
     // Function to mark triangulation domain
@@ -39,5 +37,6 @@ public:
     // Function to count triangulation's obtuse triangles
     int count_obtuse_triangles();
 };
+
 
 #endif // TRIANGULATION_H

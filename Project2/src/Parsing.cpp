@@ -1,10 +1,9 @@
-// src/Parsing.cpp
-
-#include "../include/Parsing.h"
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <boost/json/src.hpp>
+
+#include "../includes/Parsing.h"
 
 #define CONTENT_TYPE "CG_SHOP_2025_Solution"
 
@@ -57,6 +56,7 @@ InputJSON parse_file(const std::string& filename) {
 
 // Function for results output
 void output_results(const std::string& filename, const InputJSON& input, const Triangulation& triangulation) {
+    
     std::ofstream file(filename);
 
     // Check if file was opened successfully
@@ -64,10 +64,10 @@ void output_results(const std::string& filename, const InputJSON& input, const T
         std::cerr << "Error: Could not open file '" << filename << "' for writing." << std::endl;
         return;
     }
-
+    
     // Object to store output json
-    json::object results;
-
+    boost::json::object results;
+    
     // Arrays to store results from the polygon
     json::array steiner_points_x;
     json::array steiner_points_y;
@@ -84,24 +84,38 @@ void output_results(const std::string& filename, const InputJSON& input, const T
 
     // Iterate any added point to the initial polygon
     for (size_t i = input.num_points; i < points.size(); ++i) {
-        // Get exact coordinates
-        const auto point_x = CGAL::to_double(points[i].x());
-        const auto point_y = CGAL::to_double(points[i].y());
 
-        steiner_points_x.emplace_back(point_x);
-        steiner_points_y.emplace_back(point_y);
+        // Get exact coordinates
+        const auto point_x = CGAL::exact(points[i].x());
+        const auto point_y = CGAL::exact(points[i].y());
+
+        std::ostringstream ss;
+
+        // Check if the number is integer or rational and process accordingly
+        if (point_x.get_den() == 1) {
+            ss << point_x;
+            steiner_points_x.emplace_back(stoi(ss.str()));
+        } else {
+            ss << point_x;
+            steiner_points_x.emplace_back(ss.str());
+        }
+        ss.str("");
+
+
+        if (point_y.get_den() == 1) {
+            ss << point_y;
+            steiner_points_y.emplace_back(stoi(ss.str()));
+        } else {
+            ss << point_y;
+            steiner_points_y.emplace_back(ss.str());
+        }
+        ss.str("");
+        
     }
 
     // Set the values to the corresponding fields
     results["steiner_points_x"] = steiner_points_x;
     results["steiner_points_y"] = steiner_points_y;
-
-    // Map points to indices
-    std::map<Point, int> point_indices;
-    int index = 0;
-    for (const auto& pt : points) {
-        point_indices[pt] = index++;
-    }
 
     // Iterate through the edges of the result triangulation store the points indices
     for (auto eit = triangulation.cdt.edges_begin(); eit != triangulation.cdt.edges_end(); ++eit) {
@@ -109,14 +123,15 @@ void output_results(const std::string& filename, const InputJSON& input, const T
 
         // Get all edges of triangulation (constraints as well)
         if (triangulation.is_edge_in_domain(edge) || triangulation.cdt.is_constrained(edge)) {
-            Point source = edge.first->vertex((edge.second + 1) % 3)->point();
-            Point target = edge.first->vertex((edge.second + 2) % 3)->point();
+            auto source_it = std::find(points.begin(), points.end() - 1, edge.first->vertex((edge.second + 1) % 3)->point());
+            auto target_it = std::find(points.begin(), points.end() - 1, edge.first->vertex((edge.second + 2) % 3)->point());
 
-            int source_index = point_indices[source];
-            int target_index = point_indices[target];
+            int source_index = std::distance(points.begin(), source_it);
+            int target_index = std::distance(points.begin(), target_it);
 
             edges.emplace_back(json::array{source_index, target_index});
         }
+        
     }
 
     // Set the values to the corresponding field
@@ -132,4 +147,5 @@ void output_results(const std::string& filename, const InputJSON& input, const T
     } else {
         throw std::runtime_error("Unable to open output JSON file for writing");
     }
+    
 }

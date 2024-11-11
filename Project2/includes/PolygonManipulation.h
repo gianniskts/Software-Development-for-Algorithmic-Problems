@@ -1,5 +1,3 @@
-// include/PolygonManipulation.h
-
 #ifndef POLYGONMANIPULATION_H
 #define POLYGONMANIPULATION_H
 
@@ -10,8 +8,12 @@
 #include <CGAL/Triangulation_conformer_2.h>
 #include <CGAL/intersections.h>
 #include <CGAL/Segment_2.h>
+#include <iostream>
 #include <unordered_map>
 #include <boost/property_map/property_map.hpp>
+
+struct InputJSON;
+class Triangulation;
 
 // Necessary declarations
 typedef CGAL::Exact_predicates_exact_constructions_kernel           K;
@@ -29,11 +31,7 @@ typedef CGAL::Triangle_2<K>                                         Triangle_2;
 typedef CGAL::Segment_2<K>                                          Segment_2;
 typedef CDT::Vertex_handle                                          Vertex_handle;
 
-// Forward declaration
-struct InputJSON;
-class Triangulation;
-
-// Function to perform constrained Delaunay triangulation
+// Function to perform constrained delaunay triangulation
 Triangulation delaunay_const_triangulation(const InputJSON input_data);
 
 #endif // POLYGONMANIPULATION_H

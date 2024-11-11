@@ -1,26 +1,20 @@
-// src/main.cpp
-
 #include <iostream>
 #include <string>
 #include <vector>
-#include "../include/Parsing.h"
-#include "../include/PolygonManipulation.h"
-#include "../include/ActionFunctions.h"
-#include "../include/Triangulation.h"
+#include "../includes/Parsing.h"
+#include "../includes/PolygonManipulation.h"
+#include "../includes/ActionFunctions.h"
+#include "../includes/MyTriangulation.h"
 
 int main(int argc, char* argv[]) {
     try {
-        if (argc < 2) {
-            std::cerr << "Usage: ./program <input_json_file>" << std::endl;
-            return 1;
-        }
 
         std::string json_file = argv[1];
 
         // Parse the input file
         InputJSON input_json = parse_file(json_file);
 
-        // Perform constrained delaunay triangulation and optimization
+        // Perform constrained delaunay triangulation
         Triangulation result = delaunay_const_triangulation(input_json);
 
         // Output the results to a JSON file

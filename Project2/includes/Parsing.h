@@ -1,12 +1,10 @@
-// include/Parsing.h
-
 #ifndef PARSING_H
 #define PARSING_H
 
 #include <string>
 #include <vector>
-#include "../include/PolygonManipulation.h"
-#include "../include/Triangulation.h"
+#include "../includes/PolygonManipulation.h"
+#include "../includes/MyTriangulation.h"
 
 // Struct to capture input data
 struct InputJSON {
