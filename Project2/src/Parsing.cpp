@@ -51,6 +51,27 @@ InputJSON parse_file(const std::string& filename) {
         data.additional_constraints.emplace_back(json::value_to<int>(pair[0]), json::value_to<int>(pair[1]));
     }
 
+    // Parse the method
+    if (json_obj.contains("method")) {
+        data.method = json::value_to<std::string>(json_obj["method"]);
+    } else {
+        data.method = "local";
+    }
+
+    // Parse the parameters
+    if (json_obj.contains("parameters")) {
+        for (const auto& param : json_obj["parameters"].as_object()) {
+            data.parameters[param.key_c_str()] = json::value_to<double>(param.value());
+        }
+    }
+
+    // Parse the delaunay flag
+    if (json_obj.contains("delaunay")) {
+        data.delaunay = json::value_to<bool>(json_obj["delaunay"]);
+    } else {
+        data.delaunay = true;
+    }
+
     return data;
 }
 
@@ -137,15 +158,22 @@ void output_results(const std::string& filename, const InputJSON& input, const T
     // Set the values to the corresponding field
     results["edges"] = edges;
 
-    // Output results
-    std::string json_string = json::serialize(results);
+    // Include the obtuse_count
+    int obtuse_count = triangulation.count_obtuse_triangles();
+    results["obtuse_count"] = obtuse_count;
 
-    // Security check if the file opens
-    if (file.is_open()) {
-        file << json_string;
-        file.close();
-    } else {
-        throw std::runtime_error("Unable to open output JSON file for writing");
+    // Include method and parameters
+    results["method"] = input.method;
+
+    // Serialize parameters back to JSON
+    json::object params_json;
+    // TODO: L is an int and needs better handling
+    for (const auto& param : input.parameters) {
+        params_json[param.first] = param.second;
     }
-    
+    results["parameters"] = params_json;
+
+    // Output results
+    file << json::serialize(results);
+    file.close();
 }

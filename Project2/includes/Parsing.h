@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include "../includes/PolygonManipulation.h"
 #include "../includes/MyTriangulation.h"
 
@@ -15,6 +16,9 @@ struct InputJSON {
     std::vector<int> region_boundary;
     int num_constraints;
     std::vector<std::pair<int, int>> additional_constraints;
+    std::string method;
+    std::map<std::string, double> parameters;
+    bool delaunay;
 };
 
 // Parse input file in JSON format
