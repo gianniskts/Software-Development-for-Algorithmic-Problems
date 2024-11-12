@@ -61,7 +61,7 @@ InputJSON parse_file(const std::string& filename) {
     // Parse the parameters
     if (json_obj.contains("parameters")) {
         for (const auto& param : json_obj["parameters"].as_object()) {
-            data.parameters[param.key_c_str()] = json::value_to<double>(param.value());
+            data.parameters[param.key_c_str()] = param.value();
         }
     }
 
