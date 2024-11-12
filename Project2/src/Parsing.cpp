@@ -167,7 +167,7 @@ void output_results(const std::string& filename, const InputJSON& input, const T
 
     // Serialize parameters back to JSON
     json::object params_json;
-    // TODO: L is an int and needs better handling
+    // Serialize parameters back to JSON
     for (const auto& param : input.parameters) {
         params_json[param.first] = param.second;
     }
