@@ -41,6 +41,7 @@ set(SOURCES
   src/PolygonManipulation.cpp
   src/ActionFunctions.cpp
   src/MyTriangulation.cpp
+  src/OptimizationMethods.cpp
 )
 
 add_executable(main ${SOURCES})

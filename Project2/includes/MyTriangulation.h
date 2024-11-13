@@ -35,7 +35,7 @@ public:
     bool is_edge_in_domain(CDT::Edge edge) const;
 
     // Function to count triangulation's obtuse triangles
-    int count_obtuse_triangles();
+    int count_obtuse_triangles() const;
 };
 
 
