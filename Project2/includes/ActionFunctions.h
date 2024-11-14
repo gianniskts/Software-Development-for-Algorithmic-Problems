@@ -37,6 +37,6 @@ Point get_midpoint(const Point& A, const Point& B, const Point& C);
 bool add_optimal_steiner(Triangulation& triangulation);
 
 // Function to eliminate obtuse triangles (if possible)
-void eliminate_obtuse_triangles(Triangulation& triangulation);
+void eliminate_obtuse_triangles(Triangulation& triangulation, int L);
 
 #endif // ACTION_FUNCTIONS_H

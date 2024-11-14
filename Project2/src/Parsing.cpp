@@ -63,6 +63,10 @@ InputJSON parse_file(const std::string& filename) {
         for (const auto& param : json_obj["parameters"].as_object()) {
             data.parameters[param.key_c_str()] = param.value();
         }
+
+        if (data.parameters.count("L") > 0) {
+            data.L = json::value_to<int>(data.parameters["L"]);
+        }
     }
 
     // Parse the delaunay flag

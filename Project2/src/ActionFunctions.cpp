@@ -291,12 +291,14 @@ bool add_optimal_steiner(Triangulation& triangulation) {
 }
 
 // Function to eliminate obtuse triangles
-void eliminate_obtuse_triangles(Triangulation& triangulation) {
+void eliminate_obtuse_triangles(Triangulation& triangulation, int L) {
     bool improved = true;
+    int iterations = 0;
 
     // Loop terminates when adding steiner points doesn't improve the triangulations
-    while (improved) {
+    while (improved && iterations < L) {
         improved = add_optimal_steiner(triangulation);
+        iterations++;
     }
 
     // Result print
