@@ -52,7 +52,7 @@ Triangulation delaunay_const_triangulation(const InputJSON input_data) {
     edge_flip(triangulation);
 
     // Attempt to eliminate obtuse triangles by adding Steiner points
-    eliminate_obtuse_triangles(triangulation);
+    eliminate_obtuse_triangles(triangulation, input_data.L);
     
     // Visualize CDT's results
     CGAL::draw(triangulation.cdt, triangulation.in_domain);

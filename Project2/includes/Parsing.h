@@ -20,6 +20,7 @@ struct InputJSON {
     std::string method;
     std::map<std::string, boost::json::value> parameters;
     bool delaunay;
+    int L;
 };
 
 // Parse input file in JSON format
