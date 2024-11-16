@@ -21,6 +21,9 @@ struct InputJSON {
     std::map<std::string, boost::json::value> parameters;
     bool delaunay;
     int L;
+    double alpha = 1.0;
+    double beta = 1.0;
+    double initial_temperature = 100.0;
 };
 
 // Parse input file in JSON format
