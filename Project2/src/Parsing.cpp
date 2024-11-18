@@ -75,10 +75,6 @@ InputJSON parse_file(const std::string& filename) {
         if (data.parameters.count("beta") > 0) {
             data.beta = json::value_to<double>(data.parameters["beta"]);
         }
-
-        if (data.parameters.count("initial_temperature") > 0) {
-            data.initial_temperature = json::value_to<double>(data.parameters["initial_temperature"]);
-        }
     }
 
     // Parse the delaunay flag
