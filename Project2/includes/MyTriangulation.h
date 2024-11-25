@@ -4,7 +4,7 @@
 #include "../includes/PolygonManipulation.h"
 
 // Class to hold and access triangulation info
-class Triangulation {
+class Triangulation :public CDT {
 public:
     int min_obtuse_triangles;
     CDT cdt;
@@ -36,6 +36,8 @@ public:
 
     // Function to count triangulation's obtuse triangles
     int count_obtuse_triangles() const;
+
+    void remove_no_flip(Vertex_handle v);
 };
 
 

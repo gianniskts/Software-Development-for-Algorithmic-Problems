@@ -50,28 +50,6 @@ void edge_flip(Triangulation& triangulation) {
     }
 }
 
-// Function to check if two triangles form a convex quadrilateral
-bool is_convex_hull(Face_handle fh1, Face_handle fh2) {
-    
-    // Collect the four points from the two triangles
-    std::vector<Point> quadrilateral;
-
-    // Get the vertices of the shared edge
-    Point shared_v1 = fh1->vertex(0)->point();
-    Point shared_v2 = fh1->vertex(1)->point();
-    quadrilateral.push_back(shared_v1);
-    quadrilateral.push_back(shared_v2);
-
-    // Add the opposite vertices of the two triangles
-    Point tri1_opposite = fh1->vertex(2)->point();
-    Point tri2_opposite = fh2->vertex(2)->point();
-    quadrilateral.push_back(tri1_opposite);
-    quadrilateral.push_back(tri2_opposite);
-
-    // Check if the quadrilateral is convex
-    return CGAL::is_convex_2(quadrilateral.begin(), quadrilateral.end());
-}
-
 // Function to project point A onto the line defined by B and C
 Point project_point_onto_line(const Point& A, const Point& B, const Point& C) {
 
@@ -190,30 +168,127 @@ bool add_optimal_steiner(Triangulation& triangulation) {
         Point centroid = CGAL::centroid(triangle);
         Point projection = project_point_onto_line(obtuse_angle, edge_vertex_1, edge_vertex_2);
         Point midpoint = get_midpoint(p0, p1, p2);
-        Point convex_centroid;
+        Point polygon_centroid;
 
         // Vector to store candidate Steiner points
         std::vector<Point> candidate_points;
 
-        // For each edge of the obtuse triangle check its neighboring triangle
-        for (int i = 0; i < 3; ++i) {
-            Face_handle neighbor_fh = fh->neighbor(i);
+        std::set<Edge> shared_edges;
+        // Ensure given triangle does not have constrained edges
+        bool all_edges_unconstrained = true;
+        for (int i = 0; i < 3; i++) {
+            if(triangulation.cdt.is_constrained(Edge(fh, i))) {
+                all_edges_unconstrained = false;
+                break;
+            }
+        }
 
-            // Check if the neighbor is finite
-            if (!triangulation.cdt.is_infinite(neighbor_fh)) {
-                // Check if the obtuse triangle and its neighbor form a convex hull
-                if (is_convex_hull(fh, neighbor_fh)) {
-                    // Get the vertices of the triangles
-                    Point shared_v1 = fh->vertex((i + 1) % 3)->point();
-                    Point shared_v2 = fh->vertex((i + 2) % 3)->point();
-                    Point tri1_opposite = fh->vertex(i)->point();
-                    Point tri2_opposite = neighbor_fh->vertex(neighbor_fh->index(fh->vertex(i)))->point();
+        // Get neighbors that do not have constrained edges
+        std::set<Face_handle> valid_faces;
+        if (all_edges_unconstrained) {
+            // Store valid triangles
+            valid_faces.insert(fh);
 
-                    // Compute the centroid of the quadrilateral
-                    convex_centroid = CGAL::centroid(shared_v1, shared_v2, tri1_opposite, tri2_opposite);
-                    
-                    //candidate_points.push_back(convex_centroid);
+            // Iterate through each edge of the triangle to examine neighbors
+            for (int i = 0; i < 3; i++) {
+                Face_handle neighbor_fh = fh->neighbor(i);
+
+                // Check if the neighbor is finite and obtuse
+                bool neighbor_edges_unconstrained = true;
+                if (!triangulation.cdt.is_infinite(neighbor_fh) 
+                    && is_obtuse(neighbor_fh->vertex(0)->point(), neighbor_fh->vertex(1)->point(), neighbor_fh->vertex(2)->point())) {
+                    for (int j = 0; j < 3; j++) {
+                        Edge edge(neighbor_fh, j);
+                        if (triangulation.cdt.is_constrained(edge)) {
+                            neighbor_edges_unconstrained = false;
+                            break;
+                        }
+                    }
                 }
+                if (neighbor_edges_unconstrained) {
+                    valid_faces.insert(neighbor_fh);
+
+                    // Store shared edges
+                    for (int j = 0; j < 3; j++) {
+                        Vertex_handle v1 = fh->vertex(j);
+                        Vertex_handle v2 = fh->vertex((j + 1) % 3);
+
+                        // Check if the neighbor has the same edge
+                        for (int k = 0; k < 3; k++) {
+                            Vertex_handle nv1 = neighbor_fh->vertex(k);
+                            Vertex_handle nv2 = neighbor_fh->vertex((k + 1) % 3);
+
+                            if ((v1 == nv1 && v2 == nv2) || (v1 == nv2 && v2 == nv1)) {
+                                shared_edges.insert(Edge(fh, j));
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Store the formed polygon
+            Polygon_2 polygon_vertices;
+            for (const auto&face : valid_faces) {
+                for (int i = 0; i < 3; i++) {
+                    Point vertex = face->vertex(i)->point();
+
+                    // Ignore duplicates
+                    if (std::find(polygon_vertices.begin(), polygon_vertices.end(), vertex) == polygon_vertices.end()) {
+                        polygon_vertices.push_back(vertex);
+                    }
+                }
+            }
+            if (polygon_vertices.is_convex()) {
+                std::vector<Constraint_id> added_constraints;
+                // Constrain the polygon
+                for (size_t i = 0; i < polygon_vertices.size(); ++i) {
+                    Point v1 = polygon_vertices[i];
+                    Point v2 = polygon_vertices[(i+1) % polygon_vertices.size()];
+
+                    // Skip if the edge is in shared_edges
+                    bool is_shared = false;
+                    for (const auto &edge : shared_edges) {
+                        Vertex_handle ev1 = edge.first->vertex(edge.second);
+                        Vertex_handle ev2 = edge.first->vertex((edge.second + 1) % 3);
+
+                        if ((ev1->point() == v1 && ev2->point() == v2) || (ev1->point() == v2 && ev2->point() == v1)) {
+                            is_shared = true;
+                            break;
+                        }
+                    }
+
+                    if (!is_shared) {
+                        Constraint_id cid = triangulation.cdt.insert_constraint(v1, v2); // Add boundary constraint
+                        added_constraints.push_back(cid);
+                    }
+                }
+                
+                std::vector<Point> shared_edge_points;
+                
+                for (const auto &edge : shared_edges) {
+                    Vertex_handle v1 = edge.first->vertex(edge.second);
+                    Vertex_handle v2 = edge.first->vertex((edge.second + 1) % 3);
+
+                    shared_edge_points.push_back(v1->point());
+                    shared_edge_points.push_back(v2->point());
+
+                    triangulation.remove_no_flip(v1);
+                    triangulation.remove_no_flip(v2);
+                }
+
+                polygon_centroid = CGAL::centroid(polygon_vertices.begin(), polygon_vertices.end());
+                triangulation.cdt.insert(polygon_centroid);
+
+                for (const auto &point : shared_edge_points) {
+                    triangulation.cdt.insert(point);
+                }
+
+                // Re-insert the stored points as a constrained polygon
+                for (size_t i = 0; i < added_constraints.size(); ++i) {
+                    triangulation.cdt.remove_constraint(added_constraints[i]);
+                }
+                std::cout<<"Used"<<std::endl;
             }
         }
 
