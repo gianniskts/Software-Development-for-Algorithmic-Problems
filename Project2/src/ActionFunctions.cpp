@@ -280,13 +280,15 @@ bool add_optimal_steiner(Triangulation& triangulation) {
                 polygon_centroid = CGAL::centroid(polygon_vertices.begin(), polygon_vertices.end());
                 triangulation.cdt.insert(polygon_centroid);
 
+                // Re-insert the stored points
                 for (const auto &point : shared_edge_points) {
                     triangulation.cdt.insert(point);
                 }
-
-                // Re-insert the stored points as a constrained polygon
-                for (size_t i = 0; i < added_constraints.size(); ++i) {
-                    triangulation.cdt.remove_constraint(added_constraints[i]);
+                
+                if (!added_constraints.empty()) {
+                    for (size_t i = 0; i < added_constraints.size(); ++i) {
+                        triangulation.cdt.remove_constraint(added_constraints[i]);
+                    }
                 }
                 std::cout<<"Used"<<std::endl;
             }
