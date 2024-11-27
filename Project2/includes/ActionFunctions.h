@@ -21,7 +21,6 @@ bool is_obtuse(const Point& A, const Point& B, const Point& C);
 // Function to try edge flips on cdt
 void edge_flip(Triangulation& triangulation);
 
-
 // Function to project point A onto the line defined by B and C
 Point project_point_onto_line(const Point& A, const Point& B, const Point& C);
 

@@ -3,6 +3,7 @@
 #include <queue>
 #include <cmath>
 
+
 // Function to check if a triangle is obtuse
 bool is_obtuse(const Point& A, const Point& B, const Point& C) {
 
@@ -113,12 +114,10 @@ bool add_optimal_steiner(Triangulation& triangulation) {
 
     // Flag to indicate if the triangulation was improved
     bool improved = false;
+    bool polygon_method_used = false;
 
     Point best_steiner_point;
-    int min_obtuse_triangles = triangulation.min_obtuse_triangles;
-
-    // Store triangluation states
-    std::priority_queue<TriangulationState> pq;    
+    int min_obtuse_triangles = triangulation.min_obtuse_triangles;   
     
     // Data structures to store points
     std::vector<Point> initial_steiner_points;
@@ -133,12 +132,10 @@ bool add_optimal_steiner(Triangulation& triangulation) {
         }
     }
 
-    // Set the initial triangulation as a base line
-    pq.push({initial_steiner_points, min_obtuse_triangles});
 
     // Iterate through the obtuse triangles
     for (const auto& face : obtuse_faces) {
-        
+
         // Retrieve the triangle's points
         Face_handle fh = face;
         Point p0 = fh->vertex(0)->point();
@@ -173,7 +170,6 @@ bool add_optimal_steiner(Triangulation& triangulation) {
         // Vector to store candidate Steiner points
         std::vector<Point> candidate_points;
 
-        std::set<Edge> shared_edges;
         // Ensure given triangle does not have constrained edges
         bool all_edges_unconstrained = true;
         for (int i = 0; i < 3; i++) {
@@ -207,90 +203,73 @@ bool add_optimal_steiner(Triangulation& triangulation) {
                 }
                 if (neighbor_edges_unconstrained) {
                     valid_faces.insert(neighbor_fh);
-
-                    // Store shared edges
-                    for (int j = 0; j < 3; j++) {
-                        Vertex_handle v1 = fh->vertex(j);
-                        Vertex_handle v2 = fh->vertex((j + 1) % 3);
-
-                        // Check if the neighbor has the same edge
-                        for (int k = 0; k < 3; k++) {
-                            Vertex_handle nv1 = neighbor_fh->vertex(k);
-                            Vertex_handle nv2 = neighbor_fh->vertex((k + 1) % 3);
-
-                            if ((v1 == nv1 && v2 == nv2) || (v1 == nv2 && v2 == nv1)) {
-                                shared_edges.insert(Edge(fh, j));
-                                break;
-                            }
-                        }
-                    }
                 }
             }
 
             // Store the formed polygon
-            Polygon_2 polygon_vertices;
+            Polygon_2 polygon_points;
+            std::vector<Vertex_handle> polygon_vertices;
             for (const auto&face : valid_faces) {
                 for (int i = 0; i < 3; i++) {
                     Point vertex = face->vertex(i)->point();
 
-                    // Ignore duplicates
-                    if (std::find(polygon_vertices.begin(), polygon_vertices.end(), vertex) == polygon_vertices.end()) {
-                        polygon_vertices.push_back(vertex);
+                    // Skip duplicates
+                    if (std::find(polygon_points.begin(), polygon_points.end(), vertex) == polygon_points.end()) {
+                        polygon_points.push_back(vertex);
+                        polygon_vertices.push_back(face->vertex(i));
                     }
                 }
             }
-            if (polygon_vertices.is_convex()) {
-                std::vector<Constraint_id> added_constraints;
+            // Check if the polygon formed is convex
+            if (polygon_points.is_convex()) {
+                std::set<Constraint_id> added_constraints;
+                Triangulation poly_copy(triangulation);
                 // Constrain the polygon
-                for (size_t i = 0; i < polygon_vertices.size(); ++i) {
-                    Point v1 = polygon_vertices[i];
-                    Point v2 = polygon_vertices[(i+1) % polygon_vertices.size()];
-
-                    // Skip if the edge is in shared_edges
-                    bool is_shared = false;
-                    for (const auto &edge : shared_edges) {
-                        Vertex_handle ev1 = edge.first->vertex(edge.second);
-                        Vertex_handle ev2 = edge.first->vertex((edge.second + 1) % 3);
-
-                        if ((ev1->point() == v1 && ev2->point() == v2) || (ev1->point() == v2 && ev2->point() == v1)) {
-                            is_shared = true;
-                            break;
-                        }
-                    }
-
-                    if (!is_shared) {
-                        Constraint_id cid = triangulation.cdt.insert_constraint(v1, v2); // Add boundary constraint
-                        added_constraints.push_back(cid);
+                for (auto edge = polygon_points.edges_begin(); edge != polygon_points.edges_end(); ++edge) {
+                    Segment_2 current_edge(*edge);
+                    if (polygon_points.bounded_side(current_edge.source()) == CGAL::ON_BOUNDARY &&
+                        polygon_points.bounded_side(current_edge.target()) == CGAL::ON_BOUNDARY) {
+                        
+                        // Store cid to delete it later
+                        Constraint_id cid = triangulation.cdt.insert_constraint(current_edge.source(), current_edge.target());
+                        added_constraints.insert(cid);
                     }
                 }
                 
-                std::vector<Point> shared_edge_points;
-                
-                for (const auto &edge : shared_edges) {
-                    Vertex_handle v1 = edge.first->vertex(edge.second);
-                    Vertex_handle v2 = edge.first->vertex((edge.second + 1) % 3);
-
-                    shared_edge_points.push_back(v1->point());
-                    shared_edge_points.push_back(v2->point());
-
-                    triangulation.remove_no_flip(v1);
-                    triangulation.remove_no_flip(v2);
+                // Remove the vertices of the polygon from the triangulation
+                for (size_t i = 0 ; i < polygon_vertices.size(); ++i) {
+                    Vertex_handle vh = polygon_vertices[i];
+                    // Make sure a boundary point is not removed
+                    if (!triangulation.are_there_incident_constraints(vh)) {
+                        triangulation.remove_no_flip(vh);
+                    }
                 }
 
-                polygon_centroid = CGAL::centroid(polygon_vertices.begin(), polygon_vertices.end());
+                // Add the steiner point at the center of the polygon
+                polygon_centroid = CGAL::centroid(polygon_points.begin(), polygon_points.end());
                 triangulation.cdt.insert(polygon_centroid);
-
+                triangulation.mark_domain();
+                triangulation.polygon.push_back(polygon_centroid);
+                
+                
                 // Re-insert the stored points
-                for (const auto &point : shared_edge_points) {
+                for (const auto &point : polygon_points) {
                     triangulation.cdt.insert(point);
+                    triangulation.mark_domain();
                 }
                 
+                // Remove the added constraints
                 if (!added_constraints.empty()) {
-                    for (size_t i = 0; i < added_constraints.size(); ++i) {
-                        triangulation.cdt.remove_constraint(added_constraints[i]);
+                    for (Constraint_id cid : added_constraints) {
+                        triangulation.cdt.remove_constraint(cid);
                     }
                 }
-                std::cout<<"Used"<<std::endl;
+                int polygon_count = triangulation.count_obtuse_triangles();
+                if (polygon_count < min_obtuse_triangles) {
+                    std::cout<<"Used"<<std::endl;
+                    min_obtuse_triangles = polygon_count;
+                    improved = true;
+                }
             }
         }
 
@@ -327,43 +306,19 @@ bool add_optimal_steiner(Triangulation& triangulation) {
                 // Update values
                 best_steiner_point = candidate;
                 min_obtuse_triangles = obtuse_count;
-                current_steiner_points.push_back(best_steiner_point);
-                pq.push({current_steiner_points, obtuse_count});
                 
                 improved = true;
             }
         }
+
+        if (improved) {
+            triangulation.cdt.insert(best_steiner_point);
+            triangulation.polygon.push_back(best_steiner_point);
+            triangulation.mark_domain();
+        } 
+        // Update the threshold
+        triangulation.min_obtuse_triangles = min_obtuse_triangles;
     }
-
-    // Retrieve the state with the least obtuse triangles
-    TriangulationState best_state = pq.top();
-
-    // If the Steiner point addition improved the triangulation
-    if (improved) {
-        
-        // Create another test copy
-        Triangulation tcopy2(triangulation);
-        tcopy2.mark_domain();
-        // Add the Steiner points
-        for (auto i = 0; i < best_state.steiner_points.size(); ++i) {
-            tcopy2.cdt.insert(best_state.steiner_points[i]);
-            tcopy2.polygon.push_back(best_state.steiner_points[i]);
-        }
-
-        // Check if the addition of points affects the number of obtuse triangles afterwards
-        if (tcopy2.count_obtuse_triangles() < triangulation.count_obtuse_triangles()) {
-            for (auto i = 0; i < best_state.steiner_points.size(); ++i) {
-                triangulation.cdt.insert(best_state.steiner_points[i]);
-                triangulation.polygon.push_back(best_state.steiner_points[i]);
-                triangulation.mark_domain();
-            }
-            
-            // Update the threshold
-            triangulation.min_obtuse_triangles = best_state.obtuse_triangle_count;
-        }
-
-    }
-
     return improved;
 }
 

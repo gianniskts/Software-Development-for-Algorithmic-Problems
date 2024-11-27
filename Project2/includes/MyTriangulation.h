@@ -4,7 +4,7 @@
 #include "../includes/PolygonManipulation.h"
 
 // Class to hold and access triangulation info
-class Triangulation :public CDT {
+class Triangulation : public CDT {
 public:
     int min_obtuse_triangles;
     CDT cdt;
@@ -21,7 +21,7 @@ public:
         : cdt(other.cdt),  // Copy the CDT
           polygon(other.polygon),  // Copy the Polygon
           in_domain_map(other.in_domain_map),  // Copy the in_domain_map
-          in_domain(in_domain_map) {  // Reinitialize the property map
+          in_domain(other.in_domain) {  // Reinitialize the property map
         
     }
 

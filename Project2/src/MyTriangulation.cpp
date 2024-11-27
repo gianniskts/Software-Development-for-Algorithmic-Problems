@@ -46,5 +46,5 @@ int Triangulation::count_obtuse_triangles() const {
 }
 
 void Triangulation::remove_no_flip(Vertex_handle v) {
-    this->Base::Ctr::remove(v);
+    this->TR::remove(v);
 }
