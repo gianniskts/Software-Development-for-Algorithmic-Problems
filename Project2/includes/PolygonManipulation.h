@@ -2,13 +2,9 @@
 #define POLYGONMANIPULATION_H
 
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
-#include <CGAL/Triangulation_2.h>
-#include <CGAL/Constrained_triangulation_2.h>
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
-#include <CGAL/Constrained_triangulation_plus_2.h>
 #include <CGAL/Polygon_2.h>
 #include <CGAL/mark_domain_in_triangulation.h>
-#include <CGAL/Triangulation_conformer_2.h>
 #include <CGAL/intersections.h>
 #include <CGAL/Segment_2.h>
 #include <CGAL/centroid.h>
@@ -25,10 +21,7 @@ typedef CGAL::Triangulation_vertex_base_2<K>                        Vb;
 typedef CGAL::Constrained_triangulation_face_base_2<K>              Fb;
 typedef CGAL::Triangulation_data_structure_2<Vb,Fb>                 TDS;
 typedef CGAL::Exact_intersections_tag                               Itag;
-typedef CGAL::Triangulation_2<K, TDS>                               TR;
-typedef CGAL::Constrained_triangulation_2<K, TDS, Itag>             CTR;
-typedef CGAL::Constrained_Delaunay_triangulation_2<K, TDS, Itag>    CDTP;
-typedef CGAL::Constrained_triangulation_plus_2<CDTP>                CDT;
+typedef CGAL::Constrained_Delaunay_triangulation_2<K, TDS, Itag>    CDT;
 typedef CDT::Face_handle                                            Face_handle;
 typedef CDT::Point                                                  Point;
 typedef CDT::Edge                                                   Edge;
@@ -37,8 +30,6 @@ typedef CGAL::Polygon_2<K>                                          Polygon_2;
 typedef CGAL::Triangle_2<K>                                         Triangle_2;
 typedef CGAL::Segment_2<K>                                          Segment_2;
 typedef CDT::Vertex_handle                                          Vertex_handle;
-typedef CDT::Constraint_id                                          Constraint_id;
-typedef CDT::Constraint_iterator                                    Constraint_iterator;
 typedef CDT::Vertex_iterator                                        Vertex_iterator;
 
 // Function to perform constrained delaunay triangulation
