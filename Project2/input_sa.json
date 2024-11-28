@@ -109,5 +109,5 @@
         "beta": 5.0,
         "L": 1000
     },
-    "delaunay": true
+    "delaunay": false
 }

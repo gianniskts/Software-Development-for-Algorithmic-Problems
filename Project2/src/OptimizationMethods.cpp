@@ -7,7 +7,115 @@
 #include <cmath>
 
 Triangulation local_search(const InputJSON& input) {
-    return delaunay_const_triangulation(input);
+    Triangulation triangulation = delaunay_const_triangulation(input);
+    
+    bool improved = true;
+    int iterations = 0;
+    int L = input.L;
+
+    while (improved && (iterations < L)) {
+        //Mark facets that are inside the domain bounded by the polygon
+        triangulation.mark_domain();
+
+        // Flag to indicate if the triangulation was improved
+        bool improved = false;
+
+        Point best_steiner_point;
+        int min_obtuse_triangles = triangulation.min_obtuse_triangles;   
+
+        // Store the initial obtuse triangles
+        std::vector<Face_handle> obtuse_faces;
+        for (auto face_it = triangulation.cdt.finite_faces_begin(); face_it != triangulation.cdt.finite_faces_end(); ++face_it) {
+            if (is_obtuse(face_it->vertex(0)->point(), face_it->vertex(1)->point(), face_it->vertex(2)->point())) {
+                obtuse_faces.push_back(face_it);
+            }
+        }
+
+        // Iterate through the obtuse triangles
+        for (const auto& face : obtuse_faces) {
+
+            // Retrieve the triangle's points
+            Face_handle fh = face;
+            Point p0 = fh->vertex(0)->point();
+            Point p1 = fh->vertex(1)->point();
+            Point p2 = fh->vertex(2)->point();
+            
+            Point obtuse_angle, edge_vertex_1, edge_vertex_2;
+
+            // Mark which angle is the obtuse
+            if (angle(p0, p1, p2) == CGAL::OBTUSE) {
+                obtuse_angle = p1;
+                edge_vertex_1 = p2;
+                edge_vertex_2 = p0;
+            } else if (angle(p2, p0, p1) == CGAL::OBTUSE) {
+                obtuse_angle = p0;
+                edge_vertex_1 = p1;
+                edge_vertex_2 = p2;
+            } else {
+                obtuse_angle = p2;
+                edge_vertex_1 = p0;
+                edge_vertex_2 = p1;
+            }
+
+            // Get multiple candidate steiner points positions
+            Triangle_2 triangle(obtuse_angle, edge_vertex_1, edge_vertex_2);
+            Point circumcenter = CGAL::circumcenter(triangle);
+            Point centroid = CGAL::centroid(triangle);
+            Point projection = project_point_onto_line(obtuse_angle, edge_vertex_1, edge_vertex_2);
+            Point midpoint = get_midpoint(p0, p1, p2);
+            Point polygon_centroid;
+
+            // Vector to store candidate Steiner points
+            std::vector<Point> candidate_points;
+
+            // Validation check to stay inbound
+            if (is_edge_valid(edge_vertex_1, edge_vertex_2, triangulation.polygon)) {
+                candidate_points.push_back(midpoint);
+            }
+            
+            // If circumcenter is infinite, then get the centroid
+            if (!(triangulation.cdt.is_infinite(triangulation.cdt.locate(circumcenter)))) {
+                candidate_points.push_back(circumcenter);
+            } else {
+                candidate_points.push_back(centroid);
+            }
+
+            // If inbound, get the projection
+            if (is_edge_valid(edge_vertex_1, edge_vertex_2, triangulation.polygon)) {
+                candidate_points.push_back(projection);
+            }
+
+            // Iterate through the candidate points
+            for (Point& candidate : candidate_points) {
+                // Create a copy of the triangulation for testing
+                Triangulation tcopy(triangulation);
+                
+                tcopy.cdt.insert(candidate);
+                tcopy.mark_domain();
+
+                int obtuse_count = tcopy.count_obtuse_triangles();
+                
+                // If a candidate point eliminates obtuse triangles, store it
+                if (obtuse_count < min_obtuse_triangles) {
+                    // Update values
+                    best_steiner_point = candidate;
+                    min_obtuse_triangles = obtuse_count;
+                    improved = true;
+                }
+            }
+
+            if (improved) {
+                triangulation.cdt.insert(best_steiner_point);
+                triangulation.polygon.push_back(best_steiner_point);
+                triangulation.mark_domain();
+            }
+            // Update the threshold
+            triangulation.min_obtuse_triangles = min_obtuse_triangles;
+        }
+        iterations++;
+    }
+    
+    return triangulation;
 }
 
 Triangulation simulated_annealing(const InputJSON& input) {
@@ -80,10 +188,22 @@ Triangulation simulated_annealing(const InputJSON& input) {
             Point projection = project_point_onto_line(obtuse_vertex, edge_vertex_1, edge_vertex_2);
             Point midpoint = get_midpoint(p0, p1, p2);
 
-            candidate_points.push_back(circumcenter);
-            candidate_points.push_back(centroid);
-            candidate_points.push_back(projection);
-            candidate_points.push_back(midpoint);
+            // Validation check to stay inbound
+            if (is_edge_valid(edge_vertex_1, edge_vertex_2, triangulation.polygon)) {
+                candidate_points.push_back(midpoint);
+            }
+            
+            // If circumcenter is infinite, then get the centroid
+            if (!(triangulation.cdt.is_infinite(triangulation.cdt.locate(circumcenter)))) {
+                candidate_points.push_back(circumcenter);
+            } else {
+                candidate_points.push_back(centroid);
+            }
+
+            // If inbound, get the projection
+            if (is_edge_valid(edge_vertex_1, edge_vertex_2, triangulation.polygon)) {
+                candidate_points.push_back(projection);
+            }
 
             // Add a random point within the triangle
             std::uniform_real_distribution<double> dist(0.0, 1.0);
@@ -140,7 +260,7 @@ Triangulation simulated_annealing(const InputJSON& input) {
 
     // Final output
     std::cout << "Final energy: " << energy << std::endl;
-    std::cout << "Obtuse triangles: " << num_obtuse << ", Steiner points: " << num_steiner << std::endl;
+    std::cout << "Obtuse triangles: " << triangulation.count_obtuse_triangles() << ", Steiner points: " << num_steiner << std::endl;
 
     return triangulation;
 }
