@@ -6,6 +6,8 @@
 #include <chrono>
 #include <cmath>
 
+#include "../includes/draw.h"
+
 Triangulation local_search(const InputJSON& input) {
     Triangulation triangulation = delaunay_const_triangulation(input);
     
@@ -26,7 +28,7 @@ Triangulation local_search(const InputJSON& input) {
         // Store the initial obtuse triangles
         std::vector<Face_handle> obtuse_faces;
         for (auto face_it = triangulation.cdt.finite_faces_begin(); face_it != triangulation.cdt.finite_faces_end(); ++face_it) {
-            if (is_obtuse(face_it->vertex(0)->point(), face_it->vertex(1)->point(), face_it->vertex(2)->point())) {
+            if (triangulation.is_face_in_domain(face_it) && is_obtuse(face_it->vertex(0)->point(), face_it->vertex(1)->point(), face_it->vertex(2)->point())) {
                 obtuse_faces.push_back(face_it);
             }
         }
@@ -115,6 +117,9 @@ Triangulation local_search(const InputJSON& input) {
         iterations++;
     }
     
+    // Uncomment to visualize results
+    //CGAL::draw(triangulation.cdt, triangulation.in_domain);
+
     return triangulation;
 }
 
@@ -140,7 +145,7 @@ Triangulation simulated_annealing(const InputJSON& input) {
 
     double T_decrement = 1.0 / L; // Decrease temperature by 1/L each iteration
 
-    while (temperature > 0) {
+    while (temperature >= 0) {
         // Collect obtuse triangles
         std::vector<Face_handle> obtuse_faces;
         // Iterate through all triangles
@@ -189,7 +194,8 @@ Triangulation simulated_annealing(const InputJSON& input) {
             Point midpoint = get_midpoint(p0, p1, p2);
 
             // Validation check to stay inbound
-            if (is_edge_valid(edge_vertex_1, edge_vertex_2, triangulation.polygon)) {
+            if (is_edge_valid(edge_vertex_1, edge_vertex_2, triangulation.polygon)
+                && !triangulation.cdt.is_infinite(triangulation.cdt.locate(midpoint))) {
                 candidate_points.push_back(midpoint);
             }
             
@@ -201,24 +207,25 @@ Triangulation simulated_annealing(const InputJSON& input) {
             }
 
             // If inbound, get the projection
-            if (is_edge_valid(edge_vertex_1, edge_vertex_2, triangulation.polygon)) {
+            if (is_edge_valid(edge_vertex_1, edge_vertex_2, triangulation.polygon)
+                && !triangulation.cdt.is_infinite(triangulation.cdt.locate(projection))) {
                 candidate_points.push_back(projection);
             }
 
             // Add a random point within the triangle
-            std::uniform_real_distribution<double> dist(0.0, 1.0);
-            double r1 = dist(rng);
-            double r2 = dist(rng);
-            if (r1 + r2 > 1) {
-                r1 = 1 - r1;
-                r2 = 1 - r2;
-            }
-            Point random_point = p0 + (p1 - p0) * r1 + (p2 - p0) * r2;
-            candidate_points.push_back(random_point);
+            //std::uniform_real_distribution<double> dist(0.0, 1.0);
+            //double r1 = dist(rng);
+            //double r2 = dist(rng);
+            //if (r1 + r2 > 1) {
+            //    r1 = 1 - r1;
+            //    r2 = 1 - r2;
+            //}
+            //Point random_point = p0 + (p1 - p0) * r1 + (p2 - p0) * r2;
+            //candidate_points.push_back(random_point);
 
             // Randomly select one candidate
             std::uniform_int_distribution<size_t> candidate_dist(0, candidate_points.size() - 1);
-            const Point& candidate = candidate_points[candidate_dist(rng)];
+            Point& candidate = candidate_points[candidate_dist(rng)];
 
             // Create a copy of the triangulation
             Triangulation tcopy(triangulation);
@@ -236,7 +243,9 @@ Triangulation simulated_annealing(const InputJSON& input) {
             // Decide whether to accept
             if (delta_energy < 0) {
                 // Accept
-                triangulation = tcopy;
+                triangulation.cdt.insert(candidate);
+                triangulation.mark_domain();
+                triangulation.polygon.push_back(candidate);
                 num_obtuse = new_num_obtuse;
                 num_steiner = new_num_steiner;
                 energy = new_energy;
@@ -244,9 +253,11 @@ Triangulation simulated_annealing(const InputJSON& input) {
                 // Accept with probability e^{-ΔE / T}
                 double acceptance_probability = std::exp(-delta_energy / temperature);
                 // if acceptance_probability > 1, always accept
-                if (uni_dist(rng) < acceptance_probability) {
+                if (uni_dist(rng) <= acceptance_probability) {
                     // Accept worse solution
-                    triangulation = tcopy;
+                    triangulation.cdt.insert(candidate);
+                    triangulation.mark_domain();
+                    triangulation.polygon.push_back(candidate);
                     num_obtuse = new_num_obtuse;
                     num_steiner = new_num_steiner;
                     energy = new_energy;
@@ -261,6 +272,9 @@ Triangulation simulated_annealing(const InputJSON& input) {
     // Final output
     std::cout << "Final energy: " << energy << std::endl;
     std::cout << "Obtuse triangles: " << triangulation.count_obtuse_triangles() << ", Steiner points: " << num_steiner << std::endl;
+
+    // Uncomment to visualize results
+    //CGAL::draw(triangulation.cdt, triangulation.in_domain);
 
     return triangulation;
 }
