@@ -71,7 +71,8 @@ Triangulation local_search(const InputJSON& input) {
             std::vector<Point> candidate_points;
 
             // Validation check to stay inbound
-            if (is_edge_valid(edge_vertex_1, edge_vertex_2, triangulation.polygon)) {
+            if (is_edge_valid(edge_vertex_1, edge_vertex_2, triangulation.polygon)
+                && !triangulation.cdt.is_infinite(triangulation.cdt.locate(midpoint))) {
                 candidate_points.push_back(midpoint);
             }
             
@@ -83,7 +84,8 @@ Triangulation local_search(const InputJSON& input) {
             }
 
             // If inbound, get the projection
-            if (is_edge_valid(edge_vertex_1, edge_vertex_2, triangulation.polygon)) {
+            if (is_edge_valid(edge_vertex_1, edge_vertex_2, triangulation.polygon)
+                && !triangulation.cdt.is_infinite(triangulation.cdt.locate(projection))) {
                 candidate_points.push_back(projection);
             }
 
