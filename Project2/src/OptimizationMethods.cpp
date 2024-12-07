@@ -174,21 +174,24 @@ Triangulation ant_colony_optimization(const InputJSON& input) {
 
     // For cycle c = 1 to L
     for (int c = 1; c <= L; ++c) {
+        // We'll store the results for each ant
         // For ant k = 1 to K
         std::vector<Triangulation> ant_triangulations(K);
-        std::vector<double> ant_energies(K);
+        std::vector<double> ant_energies(K, std::numeric_limits<double>::infinity());
         std::vector<int> ant_used_options(K, -1); // Keep track of options used by each ant
+        std::vector<Point> ant_inserted_points(K, Point(0,0));
+        std::vector<int> ant_obtuse_counts(K, 0);
+        std::vector<int> ant_steiner_counts(K, 0);
 
-        // Optionally we can parallelize over ants, i'm not sure if needed
-        // #pragma omp parallel for
+        // For each ant, test a solution on a copy
         for (int k = 0; k < K; ++k) {
-            // Copy the best triangulation
-            Triangulation ant_triangulation = best_triangulation;
+            Triangulation test_triangulation = best_triangulation;
 
             // Identify obtuse triangles
             std::vector<Face_handle> obtuse_faces;
-            for (auto face_it = ant_triangulation.cdt.finite_faces_begin(); face_it != ant_triangulation.cdt.finite_faces_end(); ++face_it) {
-                if (ant_triangulation.is_face_in_domain(face_it) &&
+            for (auto face_it = test_triangulation.cdt.finite_faces_begin(); 
+                 face_it != test_triangulation.cdt.finite_faces_end(); ++face_it) {
+                if (test_triangulation.is_face_in_domain(face_it) &&
                     is_obtuse(face_it->vertex(0)->point(), face_it->vertex(1)->point(), face_it->vertex(2)->point())) {
                     obtuse_faces.push_back(face_it);
                 }
@@ -196,8 +199,13 @@ Triangulation ant_colony_optimization(const InputJSON& input) {
 
             if (obtuse_faces.empty()) {
                 // No obtuse triangles, nothing to do
-                ant_triangulations[k] = ant_triangulation;
-                ant_energies[k] = alpha * 0 + beta * (ant_triangulation.cdt.number_of_vertices() - input.num_points);
+                int num_obtuse = test_triangulation.count_obtuse_triangles();
+                int num_steiner = test_triangulation.cdt.number_of_vertices() - input.num_points;
+                double energy = alpha * num_obtuse + beta * num_steiner;
+                ant_triangulations[k] = test_triangulation;
+                ant_energies[k] = energy;
+                ant_obtuse_counts[k] = num_obtuse;
+                ant_steiner_counts[k] = num_steiner;
                 continue;
             }
 
@@ -206,6 +214,7 @@ Triangulation ant_colony_optimization(const InputJSON& input) {
             std::uniform_int_distribution<size_t> face_dist(0, obtuse_faces.size() - 1);
             Face_handle fh = obtuse_faces[face_dist(rng)];
 
+            // Extract points of the chosen obtuse triangle
             // For that triangle, compute possible Steiner point options
             Point p0 = fh->vertex(0)->point();
             Point p1 = fh->vertex(1)->point();
@@ -228,8 +237,6 @@ Triangulation ant_colony_optimization(const InputJSON& input) {
             }
 
             // Compute candidate Steiner points
-            std::vector<Point> candidate_points(NUM_TYPES);
-
             Triangle_2 triangle(p0, p1, p2);
             Point circumcenter = CGAL::circumcenter(triangle);
             Point projection = project_point_onto_line(obtuse_vertex, edge_vertex_1, edge_vertex_2);
@@ -237,37 +244,39 @@ Triangulation ant_colony_optimization(const InputJSON& input) {
             // For MEAN_OF_ADJACENT, we need to compute the mean of adjacent obtuse triangles' circumcenters
             Point mean_adjacent;
             int adjacent_count = 0;
-
-            // Collect circumcenters of adjacent obtuse triangles
-            std::vector<Point> adjacent_circumcenters;
-            for (int i = 0; i < 3; ++i) {
-                Face_handle neighbor = fh->neighbor(i);
-                if (!ant_triangulation.cdt.is_infinite(neighbor) && ant_triangulation.is_face_in_domain(neighbor)) {
-                    Point np0 = neighbor->vertex(0)->point();
-                    Point np1 = neighbor->vertex(1)->point();
-                    Point np2 = neighbor->vertex(2)->point();
-                    if (is_obtuse(np0, np1, np2)) {
-                        Triangle_2 ntriangle(np0, np1, np2);
-                        Point ncc = CGAL::circumcenter(ntriangle);
-                        adjacent_circumcenters.push_back(ncc);
-                        adjacent_count++;
+            {
+                // Collect circumcenters of adjacent obtuse triangles
+                std::vector<Point> adjacent_circumcenters;
+                for (int i = 0; i < 3; ++i) {
+                    Face_handle neighbor = fh->neighbor(i);
+                    if (!test_triangulation.cdt.is_infinite(neighbor) && test_triangulation.is_face_in_domain(neighbor)) {
+                        Point np0 = neighbor->vertex(0)->point();
+                        Point np1 = neighbor->vertex(1)->point();
+                        Point np2 = neighbor->vertex(2)->point();
+                        if (is_obtuse(np0, np1, np2)) {
+                            Triangle_2 ntriangle(np0, np1, np2);
+                            Point ncc = CGAL::circumcenter(ntriangle);
+                            adjacent_circumcenters.push_back(ncc);
+                            adjacent_count++;
+                        }
                     }
                 }
-            }
 
-            if (adjacent_count >= 2) {
-                // Compute mean of circumcenters
-                K::FT x_sum = 0, y_sum = 0;
-                for (const auto& pt : adjacent_circumcenters) {
-                    x_sum += pt.x();
-                    y_sum += pt.y();
+                if (adjacent_count >= 2) {
+                    // Compute mean of circumcenters
+                    K::FT x_sum = 0, y_sum = 0;
+                    for (const auto& pt : adjacent_circumcenters) {
+                        x_sum += pt.x();
+                        y_sum += pt.y();
+                    }
+                    mean_adjacent = Point(x_sum / adjacent_count, y_sum / adjacent_count);
+                } else {
+                    // If fewer than 2 adjacent obtuse triangles, we can set mean_adjacent to some default or skip this option
+                    mean_adjacent = Point(0, 0); // Default if not enough adjacent
                 }
-                mean_adjacent = Point(x_sum / adjacent_count, y_sum / adjacent_count);
-            } else {
-                // If fewer than 2 adjacent obtuse triangles, we can set mean_adjacent to some default or skip this option
-                mean_adjacent = Point(0, 0); // Placeholder
             }
 
+            std::vector<Point> candidate_points(NUM_TYPES);
             candidate_points[VERTEX_PROJECTION] = projection;
             candidate_points[CIRCUMCENTER] = circumcenter;
             candidate_points[MIDPOINT] = midpoint;
@@ -355,40 +364,62 @@ Triangulation ant_colony_optimization(const InputJSON& input) {
 
             Point selected_point = candidate_points[selected_option_index];
 
-            // Insert the point into the triangulation
-            ant_triangulation.cdt.insert(selected_point);
-            ant_triangulation.mark_domain(); // Update domain markers
+            // Test insertion on the copy (test_triangulation)
+            test_triangulation.cdt.insert(selected_point);
+            test_triangulation.mark_domain();
 
             // Evaluate the triangulation (compute energy)
-            int num_obtuse = ant_triangulation.count_obtuse_triangles();
-            int num_steiner = ant_triangulation.cdt.number_of_vertices() - input.num_points;
+            int num_obtuse = test_triangulation.count_obtuse_triangles();
+            int num_steiner = test_triangulation.cdt.number_of_vertices() - input.num_points;
             double energy = alpha * num_obtuse + beta * num_steiner;
 
-            ant_triangulations[k] = ant_triangulation;
+            // Store ant results
+            ant_triangulations[k] = test_triangulation;
             ant_energies[k] = energy;
-            ant_used_options[k] = selected_option_index; // Record the used option
+            ant_used_options[k] = selected_option_index;
+            ant_inserted_points[k] = selected_point;
+            ant_obtuse_counts[k] = num_obtuse;
+            ant_steiner_counts[k] = num_steiner;
         }
 
         // SaveBestTriangulation[c]: select the best among ants
+        // After all ants: choose the best among them
+        double cycle_best_energy = best_energy;
+        int cycle_best_ant = -1;
         for (int k = 0; k < K; ++k) {
-            if (ant_energies[k] < best_energy) {
-                best_energy = ant_energies[k];
-                best_triangulation = ant_triangulations[k];
-                best_num_obtuse = best_triangulation.count_obtuse_triangles();
-                best_num_steiner = best_triangulation.cdt.number_of_vertices() - input.num_points;
+            if (ant_energies[k] < cycle_best_energy) {
+                cycle_best_energy = ant_energies[k];
+                cycle_best_ant = k;
             }
         }
 
-        // UpdatePheromones[c]
-        // For each Steiner point option sp (type)
+        // If there's an improvement, apply it to the best_triangulation
+        if (cycle_best_ant != -1 && ant_energies[cycle_best_ant] < best_energy) {
+            // Insert the chosen point of that ant into best_triangulation
+            Point chosen_point = ant_inserted_points[cycle_best_ant];
+            best_triangulation.cdt.insert(chosen_point);
+            best_triangulation.mark_domain();
+
+            // Update best_energy and counts
+            best_energy = ant_energies[cycle_best_ant];
+            best_num_obtuse = best_triangulation.count_obtuse_triangles();
+            best_num_steiner = best_triangulation.cdt.number_of_vertices() - input.num_points;
+        }
+
+        // Update pheromones
+        // We'll reward ants that produced solutions with fewer obtuse triangles
+        // than the current best_num_obtuse, as in the original logic.
         std::vector<double> delta_pheromones(NUM_TYPES, 0.0);
         for (int k = 0; k < K; ++k) {
             // For the option used by ant k
             int sp = ant_used_options[k];
-            if (sp == -1) continue; // No option used
-            Triangulation& ant_triangulation = ant_triangulations[k];
-            int num_obtuse = ant_triangulation.count_obtuse_triangles();
-            int num_steiner = ant_triangulation.cdt.number_of_vertices() - input.num_points;
+            if (sp == -1) continue;
+
+            int num_obtuse = ant_obtuse_counts[k];
+            int num_steiner = ant_steiner_counts[k];
+
+            // If the ant reduced the number of obtuse triangles relative to best_num_obtuse
+            // at the time of evaluation, or contributed to a better energy, give pheromone:
             if (num_obtuse < best_num_obtuse) {
                 // The ant reduced the number of obtuse triangles
                 double delta_tau = 1.0 / (1.0 + alpha * num_obtuse + beta * num_steiner);
