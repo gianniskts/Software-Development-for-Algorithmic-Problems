@@ -106,6 +106,8 @@ Point get_midpoint(const Point& A, const Point& B, const Point& C) {
     }
 }
 
+/* Roll-back to 1st Project implementation (if delaunay boolean parameter is true)*/
+
 // Function to add Steiner points
 bool add_optimal_steiner(Triangulation& triangulation) {
     
@@ -116,7 +118,15 @@ bool add_optimal_steiner(Triangulation& triangulation) {
     bool improved = false;
 
     Point best_steiner_point;
-    int min_obtuse_triangles = triangulation.min_obtuse_triangles;   
+    int min_obtuse_triangles = triangulation.min_obtuse_triangles;
+
+    // Store triangluation states
+    std::priority_queue<TriangulationState> pq;    
+    
+    // Data structures to store points
+    std::vector<Point> initial_steiner_points;
+    initial_steiner_points.assign(triangulation.polygon.begin(), triangulation.polygon.end());
+    std::vector<Point> current_steiner_points;
 
     // Store the initial obtuse triangles
     std::vector<Face_handle> obtuse_faces;
@@ -126,9 +136,12 @@ bool add_optimal_steiner(Triangulation& triangulation) {
         }
     }
 
+    // Set the initial triangulation as a base line
+    pq.push({initial_steiner_points, min_obtuse_triangles});
+
     // Iterate through the obtuse triangles
     for (const auto& face : obtuse_faces) {
-
+        
         // Retrieve the triangle's points
         Face_handle fh = face;
         Point p0 = fh->vertex(0)->point();
@@ -158,7 +171,7 @@ bool add_optimal_steiner(Triangulation& triangulation) {
         Point centroid = CGAL::centroid(triangle);
         Point projection = project_point_onto_line(obtuse_angle, edge_vertex_1, edge_vertex_2);
         Point midpoint = get_midpoint(p0, p1, p2);
-        Point polygon_centroid;
+        Point convex_centroid;
 
         // Vector to store candidate Steiner points
         std::vector<Point> candidate_points;
@@ -185,6 +198,7 @@ bool add_optimal_steiner(Triangulation& triangulation) {
             // Create a copy of the triangulation for testing
             Triangulation tcopy(triangulation);
             
+            tcopy.mark_domain();
             tcopy.cdt.insert(candidate);
             tcopy.mark_domain();
 
@@ -195,32 +209,53 @@ bool add_optimal_steiner(Triangulation& triangulation) {
                 // Update values
                 best_steiner_point = candidate;
                 min_obtuse_triangles = obtuse_count;
+                current_steiner_points.push_back(best_steiner_point);
+                pq.push({current_steiner_points, obtuse_count});
+                
                 improved = true;
             }
         }
-
-        if (improved) {
-            triangulation.cdt.insert(best_steiner_point);
-            triangulation.polygon.push_back(best_steiner_point);
-            triangulation.mark_domain();
-        }
-        // Update the threshold
-        triangulation.min_obtuse_triangles = min_obtuse_triangles;
     }
+
+    // Retrieve the state with the least obtuse triangles
+    TriangulationState best_state = pq.top();
+
+    // If the Steiner point addition improved the triangulation
+    if (improved) {
+        
+        // Create another test copy
+        Triangulation tcopy2(triangulation);
+        tcopy2.mark_domain();
+        // Add the Steiner points
+        for (auto i = 0; i < best_state.steiner_points.size(); ++i) {
+            tcopy2.cdt.insert(best_state.steiner_points[i]);
+            tcopy2.polygon.push_back(best_state.steiner_points[i]);
+        }
+
+        // Check if the addition of points affects the number of obtuse triangles afterwards
+        if (tcopy2.count_obtuse_triangles() < triangulation.count_obtuse_triangles()) {
+            for (auto i = 0; i < best_state.steiner_points.size(); ++i) {
+                triangulation.cdt.insert(best_state.steiner_points[i]);
+                triangulation.polygon.push_back(best_state.steiner_points[i]);
+                triangulation.mark_domain();
+            }
+            
+            // Update the threshold
+            triangulation.min_obtuse_triangles = best_state.obtuse_triangle_count;
+        }
+
+    }
+
     return improved;
 }
 
 // Function to eliminate obtuse triangles
-void eliminate_obtuse_triangles(Triangulation& triangulation, int L) {
+void eliminate_obtuse_triangles(Triangulation& triangulation) {
     bool improved = true;
-    int iterations = 0;
 
     // Loop terminates when adding steiner points doesn't improve the triangulations
-    while (improved && (iterations < L)) {
+    while (improved) {
         improved = add_optimal_steiner(triangulation);
-        iterations++;
     }
 
-    // Result print
-    std::cout << "Total obtuse triangles: " << triangulation.count_obtuse_triangles() << std::endl;
 }

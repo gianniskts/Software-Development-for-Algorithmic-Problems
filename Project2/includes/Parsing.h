@@ -23,6 +23,10 @@ struct InputJSON {
     int L;
     double alpha = 1.0;
     double beta = 1.0;
+    double kappa = 10.0;
+    double xi = 1.0;
+    double psi = 1.0;
+    double lambda = 1.0;
 };
 
 // Parse input file in JSON format
