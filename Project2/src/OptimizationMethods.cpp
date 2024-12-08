@@ -12,30 +12,33 @@ Triangulation local_search(const InputJSON& input) {
 
 Triangulation simulated_annealing(const InputJSON& input) {
     // Get parameters from input
-    double alpha = input.alpha;
-    double beta = input.beta;
-    int L = input.L;
+    double alpha = input.alpha; // Weight for obtuse triangles in the energy function
+    double beta = input.beta;   // Weight for Steiner points in the energy function
+    int L = input.L;            // Number of iterations (controls temperature decrement)
+    
     // Set initial temperature T <-- 1
     double temperature = 1.0;
 
     // Initialize triangulation
     Triangulation triangulation = delaunay_const_triangulation(input);
 
-    // Calculate initial energy
+    // Initial energy
+    // Energy function combines penalties for obtuse triangles and Steiner points
     int num_obtuse = triangulation.count_obtuse_triangles();
     int num_steiner = triangulation.cdt.number_of_vertices() - input.num_points;
     double energy = alpha * num_obtuse + beta * num_steiner;
 
-    // Set up random number generator
+    // Random number generator for probabilistic acceptance of "bad" moves
     std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count());
     std::uniform_real_distribution<double> uni_dist(0.0, 1.0);
 
+    // Rate of temperature decrease
     double T_decrement = 1.0 / L; // Decrease temperature by 1/L each iteration
 
     while (temperature > 0) {
-        // Collect obtuse triangles
+        // Collecting obtuse triangles
         std::vector<Face_handle> obtuse_faces;
-        // Iterate through all triangles
+        // Check if the triangle is within the domain and is obtuse
         for (auto face_it = triangulation.cdt.finite_faces_begin(); face_it != triangulation.cdt.finite_faces_end(); ++face_it) {
             // if the triangle is in the domain and is obtuse
             if (triangulation.is_face_in_domain(face_it) && is_obtuse(face_it->vertex(0)->point(), face_it->vertex(1)->point(), face_it->vertex(2)->point())) {
@@ -43,15 +46,16 @@ Triangulation simulated_annealing(const InputJSON& input) {
             }
         }
 
-        // If no obtuse triangles, break the loop
+        // If no obtuse triangles remain, stop the optimization
         if (obtuse_faces.empty()) {
             std::cout << "No obtuse triangles left. Optimization complete." << std::endl;
             break;
         }
 
-        // For each obtuse triangle
+        // Process each obtuse triangle to attempt improvement
         for (Face_handle fh : obtuse_faces) {
             // Generate candidate Steiner points (5 options)
+            // Identify obtuse angle vertex and edges
             Point p0 = fh->vertex(0)->point();
             Point p1 = fh->vertex(1)->point();
             Point p2 = fh->vertex(2)->point();
@@ -75,10 +79,10 @@ Triangulation simulated_annealing(const InputJSON& input) {
             // Generate candidate points
             std::vector<Point> candidate_points;
             Triangle_2 triangle(p0, p1, p2);
-            Point circumcenter = CGAL::circumcenter(triangle);
-            Point centroid = CGAL::centroid(triangle);
-            Point projection = project_point_onto_line(obtuse_vertex, edge_vertex_1, edge_vertex_2);
-            Point midpoint = get_midpoint(p0, p1, p2);
+            Point circumcenter = CGAL::circumcenter(triangle); // Circumcenter
+            Point centroid = CGAL::centroid(triangle);         // Kentro Varous
+            Point projection = project_point_onto_line(obtuse_vertex, edge_vertex_1, edge_vertex_2); // Projection
+            Point midpoint = get_midpoint(p0, p1, p2);         // Midpoint
 
             candidate_points.push_back(circumcenter);
             candidate_points.push_back(centroid);
@@ -86,17 +90,17 @@ Triangulation simulated_annealing(const InputJSON& input) {
             candidate_points.push_back(midpoint);
 
             // Add a random point within the triangle
-            std::uniform_real_distribution<double> dist(0.0, 1.0);
-            double r1 = dist(rng);
-            double r2 = dist(rng);
-            if (r1 + r2 > 1) {
-                r1 = 1 - r1;
+            std::uniform_real_distribution<double> dist(0.0, 1.0); // Random number generator for point selection
+            double r1 = dist(rng); // Random number between 0 and 1
+            double r2 = dist(rng); // Random number between 0 and 1
+            if (r1 + r2 > 1) { // If the point is outside the triangle, go it back
+                r1 = 1 - r1; 
                 r2 = 1 - r2;
             }
-            Point random_point = p0 + (p1 - p0) * r1 + (p2 - p0) * r2;
-            candidate_points.push_back(random_point);
+            Point random_point = p0 + (p1 - p0) * r1 + (p2 - p0) * r2; // Random point within the triangle
+            candidate_points.push_back(random_point); // Random point
 
-            // Randomly select one candidate
+            // Randomly select one candidate point to insert
             std::uniform_int_distribution<size_t> candidate_dist(0, candidate_points.size() - 1);
             const Point& candidate = candidate_points[candidate_dist(rng)];
 
@@ -110,10 +114,10 @@ Triangulation simulated_annealing(const InputJSON& input) {
             int new_num_steiner = tcopy.cdt.number_of_vertices() - input.num_points;
             double new_energy = alpha * new_num_obtuse + beta * new_num_steiner;
 
-            // Calculate ΔE
+            // Calculate the energy difference ΔE
             double delta_energy = new_energy - energy;
 
-            // Decide whether to accept
+            // Metropolis criterion: accept new state probabilistically if ΔE > 0
             if (delta_energy < 0) {
                 // Accept
                 triangulation = tcopy;
@@ -134,7 +138,7 @@ Triangulation simulated_annealing(const InputJSON& input) {
             }
         }
 
-        // Decrease temperature
+        // Decrease temperature gradually
         temperature -= T_decrement;
     }
 
@@ -146,44 +150,48 @@ Triangulation simulated_annealing(const InputJSON& input) {
 }
 
 Triangulation ant_colony_optimization(const InputJSON& input) {
-    // Get parameters from input
-    double alpha = input.alpha;   // α
-    double beta = input.beta;     // β
-    double xi = input.xi;         // χ
-    double psi = input.psi;       // ψ
-    double lambda = input.lambda; // λ
-    int K = input.kappa;          // Number of ants
-    int L = input.L;              // Number of cycles
+    // Step 1: Extract parameters from the input JSON
+    double alpha = input.alpha;   // Weight for obtuse triangles in energy calculation
+    double beta = input.beta;     // Weight for Steiner points in energy calculation
+    double xi = input.xi;         // Influence of pheromone in probabilistic selection
+    double psi = input.psi;       // Influence of heuristic in probabilistic selection
+    double lambda = input.lambda; // Pheromone evaporation rate
+    int K = input.kappa;          // Number of ants (colony size)
+    int L = input.L;              // Number of optimization cycles
 
-    // Initialize pheromone values τ0 > 0 for all Steiner point options (types)
+    // Step 2: Define Steiner point types and initialize pheromone values
     enum SteinerPointType {
-        VERTEX_PROJECTION = 0,
-        CIRCUMCENTER = 1,
-        MIDPOINT = 2,
-        MEAN_OF_ADJACENT = 3,
-        NUM_TYPES = 4
+        VERTEX_PROJECTION = 0, // Projection of the obtuse vertex onto the opposite edge
+        CIRCUMCENTER = 1,      // Circumcenter of the obtuse triangle
+        MIDPOINT = 2,          // Midpoint of the longest edge of the obtuse triangle
+        MEAN_OF_ADJACENT = 3,  // Mean of circumcenters of neighbour obtuse triangles
+        NUM_TYPES = 4          // Number of Steiner point types
     };
 
+    // Initialize pheromone values for all Steiner point types (τ_sp > 0 initially)
     std::vector<double> pheromones(NUM_TYPES, 1.0); // τ_sp for each Steiner point type
 
-    // Initialize the best triangulation
+    // Step 3: Initialize the best triangulation
     Triangulation best_triangulation = delaunay_const_triangulation(input);
     int best_num_obtuse = best_triangulation.count_obtuse_triangles();
     int best_num_steiner = best_triangulation.cdt.number_of_vertices() - input.num_points;
     double best_energy = alpha * best_num_obtuse + beta * best_num_steiner;
 
-    // For cycle c = 1 to L
+    // Step 4: Begin optimization cycles (outer loop: cycles c = 1 to L)
     for (int c = 1; c <= L; ++c) {
-        // For ant k = 1 to K
-        std::vector<Triangulation> ant_triangulations(K);
-        std::vector<double> ant_energies(K);
-        std::vector<int> ant_used_options(K, -1); // Keep track of options used by each ant
+        // Each cycle simulates the actions of K ants, who independently improve the triangulation
+        std::vector<Triangulation> ant_triangulations(K); // Stores triangulations created by each ant
+        std::vector<double> ant_energies(K);              // Stores energy of each ant's triangulation
+        std::vector<int> ant_used_options(K, -1);         // Tracks the Steiner point option used by each ant
+        
+        // Step 5: For each ant k, improve the triangulation by addressing obtuse triangles
         for (int k = 0; k < K; ++k) {
-            // Copy the best triangulation
+            // Copy and start with the best triangulation
             Triangulation ant_triangulation = best_triangulation;
 
             // Identify obtuse triangles
-            std::vector<Face_handle> obtuse_faces;
+            std::vector<Face_handle> obtuse_faces; // List of obtuse triangles
+            // Check if the triangle is within the domain and is obtuse
             for (auto face_it = ant_triangulation.cdt.finite_faces_begin(); face_it != ant_triangulation.cdt.finite_faces_end(); ++face_it) {
                 if (ant_triangulation.is_face_in_domain(face_it) &&
                     is_obtuse(face_it->vertex(0)->point(), face_it->vertex(1)->point(), face_it->vertex(2)->point())) {
@@ -191,6 +199,7 @@ Triangulation ant_colony_optimization(const InputJSON& input) {
                 }
             }
 
+            // If no obtuse triangles remain, the triangulation is optimal for this ant
             if (obtuse_faces.empty()) {
                 // No obtuse triangles, nothing to do
                 ant_triangulations[k] = ant_triangulation;
@@ -198,10 +207,10 @@ Triangulation ant_colony_optimization(const InputJSON& input) {
                 continue;
             }
 
-            // Randomly select one obtuse triangle
-            std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count() + k);
-            std::uniform_int_distribution<size_t> face_dist(0, obtuse_faces.size() - 1);
-            Face_handle fh = obtuse_faces[face_dist(rng)];
+            // Randomly select one obtuse triangle for improvement
+            std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count() + k); // Seed with ant-specific value
+            std::uniform_int_distribution<size_t> face_dist(0, obtuse_faces.size() - 1); // Randomly select obtuse triangle
+            Face_handle fh = obtuse_faces[face_dist(rng)]; // Selected obtuse triangle
 
             // For that triangle, compute possible Steiner point options
             Point p0 = fh->vertex(0)->point();
@@ -224,26 +233,30 @@ Triangulation ant_colony_optimization(const InputJSON& input) {
                 edge_vertex_2 = p1;
             }
 
-            // Compute candidate Steiner points
-            std::vector<Point> candidate_points(NUM_TYPES);
+            // Compute Steiner point candidates and evaluate their heuristic values η.
+            // Probabilities P_sp are computed using pheromone values τ and heuristics η.
+            // Ant selects a Steiner point probabilistically based on P_sp.
+            // Ant inserts the selected Steiner point and evaluates the new triangulation's energy.
+            // Ant updates the pheromone values τ based on the energy of the new triangulation.
+            std::vector<Point> candidate_points(NUM_TYPES); // Candidate Steiner points for the obtuse triangle
 
-            Triangle_2 triangle(p0, p1, p2);
+            Triangle_2 triangle(p0, p1, p2); // Triangle formed by the obtuse vertices
             Point circumcenter = CGAL::circumcenter(triangle);
             Point projection = project_point_onto_line(obtuse_vertex, edge_vertex_1, edge_vertex_2);
             Point midpoint = CGAL::midpoint(edge_vertex_1, edge_vertex_2);
-            // For MEAN_OF_ADJACENT, we need to compute the mean of adjacent obtuse triangles' circumcenters
+            // For MEAN_OF_ADJACENT, we compute the mean of adjacent obtuse triangles' circumcenters
             Point mean_adjacent;
             int adjacent_count = 0;
 
             // Collect circumcenters of adjacent obtuse triangles
             std::vector<Point> adjacent_circumcenters;
-            for (int i = 0; i < 3; ++i) {
-                Face_handle neighbor = fh->neighbor(i);
+            for (int i = 0; i < 3; ++i) { // Iterate over the three edges of the obtuse triangle
+                Face_handle neighbor = fh->neighbor(i); // Get the neighboring triangle
                 if (!ant_triangulation.cdt.is_infinite(neighbor) && ant_triangulation.is_face_in_domain(neighbor)) {
                     Point np0 = neighbor->vertex(0)->point();
                     Point np1 = neighbor->vertex(1)->point();
                     Point np2 = neighbor->vertex(2)->point();
-                    if (is_obtuse(np0, np1, np2)) {
+                    if (is_obtuse(np0, np1, np2)) { // Check if the neighbor is obtuse
                         Triangle_2 ntriangle(np0, np1, np2);
                         Point ncc = CGAL::circumcenter(ntriangle);
                         adjacent_circumcenters.push_back(ncc);
@@ -251,7 +264,7 @@ Triangulation ant_colony_optimization(const InputJSON& input) {
                     }
                 }
             }
-
+            // Compute mean of circumcenters if there are at least 2 adjacent obtuse triangles
             if (adjacent_count >= 2) {
                 // Compute mean of circumcenters
                 K::FT x_sum = 0, y_sum = 0;
@@ -259,7 +272,7 @@ Triangulation ant_colony_optimization(const InputJSON& input) {
                     x_sum += pt.x();
                     y_sum += pt.y();
                 }
-                mean_adjacent = Point(x_sum / adjacent_count, y_sum / adjacent_count);
+                mean_adjacent = Point(x_sum / adjacent_count, y_sum / adjacent_count); // Mean of circumcenters
             } else {
                 // If fewer than 2 adjacent obtuse triangles, we can set mean_adjacent to some default or skip this option
                 mean_adjacent = Point(0, 0); // Placeholder
@@ -293,14 +306,14 @@ Triangulation ant_colony_optimization(const InputJSON& input) {
             }
 
             // Compute ρ
-            double rho = CGAL::to_double(circumradius / height);
+            double rho = CGAL::to_double(circumradius / height); // Radius-to-height ratio
 
             // Compute η_sp for each option
-            std::vector<double> eta(NUM_TYPES, 0.0);
+            std::vector<double> eta(NUM_TYPES, 0.0); // Heuristic values for each Steiner point type
 
             // VERTEX_PROJECTION
             if (rho > 1.0) {
-                eta[VERTEX_PROJECTION] = std::max(0.0, (rho - 1.0) / rho);
+                eta[VERTEX_PROJECTION] = std::max(0.0, (rho - 1.0) / rho); // Heuristic value for vertex projection
             } else {
                 eta[VERTEX_PROJECTION] = 0.0;
             }
@@ -348,9 +361,9 @@ Triangulation ant_colony_optimization(const InputJSON& input) {
 
             // Select an option according to probabilities
             std::discrete_distribution<int> option_dist(probabilities.begin(), probabilities.end());
-            int selected_option_index = option_dist(rng);
+            int selected_option_index = option_dist(rng); // Index of the selected option
 
-            Point selected_point = candidate_points[selected_option_index];
+            Point selected_point = candidate_points[selected_option_index]; // Selected Steiner point
 
             // Insert the point into the triangulation
             ant_triangulation.cdt.insert(selected_point);
@@ -366,9 +379,9 @@ Triangulation ant_colony_optimization(const InputJSON& input) {
             ant_used_options[k] = selected_option_index; // Record the used option
         }
 
-        // SaveBestTriangulation[c]: select the best among ants
+        // Step 6: Update the global best triangulation based on the ants' results.
         for (int k = 0; k < K; ++k) {
-            if (ant_energies[k] < best_energy) {
+            if (ant_energies[k] < best_energy) { // If the ant improved the energy
                 best_energy = ant_energies[k];
                 best_triangulation = ant_triangulations[k];
                 best_num_obtuse = best_triangulation.count_obtuse_triangles();
@@ -376,10 +389,11 @@ Triangulation ant_colony_optimization(const InputJSON& input) {
             }
         }
 
-        // UpdatePheromones[c]
+        // Step 7: Update pheromone trails based on the ants' performance.
+        // Pheromones are updated based on the number of obtuse triangles reduced by each ant.
         // For each Steiner point option sp (type)
         std::vector<double> delta_pheromones(NUM_TYPES, 0.0);
-        for (int k = 0; k < K; ++k) {
+        for (int k = 0; k < K; ++k) {   // For each ant
             // For the option used by ant k
             int sp = ant_used_options[k];
             if (sp == -1) continue; // No option used
@@ -388,12 +402,13 @@ Triangulation ant_colony_optimization(const InputJSON& input) {
             int num_steiner = ant_triangulation.cdt.number_of_vertices() - input.num_points;
             if (num_obtuse < best_num_obtuse) {
                 // The ant reduced the number of obtuse triangles
-                double delta_tau = 1.0 / (1.0 + alpha * num_obtuse + beta * num_steiner);
-                delta_pheromones[sp] += delta_tau;
+                double delta_tau = 1.0 / (1.0 + alpha * num_obtuse + beta * num_steiner); // Δτ_sp, based on energy
+                delta_pheromones[sp] += delta_tau; // Accumulate Δτ_sp
             }
         }
 
         // Update τ_sp
+        // Apply pheromone evaporation and add the accumulated Δτ_sp
         for (int sp = 0; sp < NUM_TYPES; ++sp) {
             pheromones[sp] = (1.0 - lambda) * pheromones[sp] + delta_pheromones[sp];
         }
