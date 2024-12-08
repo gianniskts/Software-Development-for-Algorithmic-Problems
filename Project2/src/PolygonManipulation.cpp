@@ -48,15 +48,17 @@ Triangulation delaunay_const_triangulation(const InputJSON input_data) {
 
     triangulation.min_obtuse_triangles = triangulation.count_obtuse_triangles();
     
-    // Try edge flips on obtuse triangles
-    edge_flip(triangulation);
+    // If parameter is true, start from 1st project
+    if (input_data.delaunay) {
+        // Try edge flips on obtuse triangles
+        edge_flip(triangulation);
 
-    // Attempt to eliminate obtuse triangles by adding Steiner points
-    eliminate_obtuse_triangles(triangulation, input_data.L);
-    
+        // Attempt to eliminate obtuse triangles by adding Steiner points
+        eliminate_obtuse_triangles(triangulation);
+    }
+
     // Visualize CDT's results
     CGAL::draw(triangulation.cdt, triangulation.in_domain);
-    
 
     return triangulation;
 }

@@ -20,7 +20,6 @@
 #include <CGAL/Constrained_triangulation_2.h>
 #include <CGAL/Triangulation_2/internal/In_domain.h>
 
-#include <CGAL/Random.h>  
 #include <ctime>            
 
 #ifdef CGAL_USE_BASIC_VIEWER
@@ -31,7 +30,6 @@
 namespace CGAL
 {
 
-  Random random(static_cast<unsigned int>(std::time(0))); 
 // Viewer class for T2
   template<class T2, class InDomainPmap>
 class SimpleConstrainedTriangulation2ViewerQt : public Basic_viewer_qt
@@ -64,7 +62,7 @@ public:
 protected:
   void compute_face(Facet_const_handle fh)
   {
-    CGAL::IO::Color c = /*get(ipm, fh)? CGAL::get_random_color(random) :*/ CGAL::IO::white();
+    CGAL::IO::Color c = CGAL::IO::white();
 
     face_begin(c);
 

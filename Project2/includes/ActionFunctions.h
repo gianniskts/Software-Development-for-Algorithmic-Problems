@@ -21,9 +21,6 @@ bool is_obtuse(const Point& A, const Point& B, const Point& C);
 // Function to try edge flips on cdt
 void edge_flip(Triangulation& triangulation);
 
-// Function to check if two triangles form a convex quadrilateral
-bool is_convex_hull(Face_handle fh1, Face_handle fh2);
-
 // Function to project point A onto the line defined by B and C
 Point project_point_onto_line(const Point& A, const Point& B, const Point& C);
 
@@ -37,6 +34,6 @@ Point get_midpoint(const Point& A, const Point& B, const Point& C);
 bool add_optimal_steiner(Triangulation& triangulation);
 
 // Function to eliminate obtuse triangles (if possible)
-void eliminate_obtuse_triangles(Triangulation& triangulation, int L);
+void eliminate_obtuse_triangles(Triangulation& triangulation);
 
 #endif // ACTION_FUNCTIONS_H

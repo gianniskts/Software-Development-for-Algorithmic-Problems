@@ -3,6 +3,7 @@
 #include <queue>
 #include <cmath>
 
+
 // Function to check if a triangle is obtuse
 bool is_obtuse(const Point& A, const Point& B, const Point& C) {
 
@@ -48,28 +49,6 @@ void edge_flip(Triangulation& triangulation) {
             }
         }
     }
-}
-
-// Function to check if two triangles form a convex quadrilateral
-bool is_convex_hull(Face_handle fh1, Face_handle fh2) {
-    
-    // Collect the four points from the two triangles
-    std::vector<Point> quadrilateral;
-
-    // Get the vertices of the shared edge
-    Point shared_v1 = fh1->vertex(0)->point();
-    Point shared_v2 = fh1->vertex(1)->point();
-    quadrilateral.push_back(shared_v1);
-    quadrilateral.push_back(shared_v2);
-
-    // Add the opposite vertices of the two triangles
-    Point tri1_opposite = fh1->vertex(2)->point();
-    Point tri2_opposite = fh2->vertex(2)->point();
-    quadrilateral.push_back(tri1_opposite);
-    quadrilateral.push_back(tri2_opposite);
-
-    // Check if the quadrilateral is convex
-    return CGAL::is_convex_2(quadrilateral.begin(), quadrilateral.end());
 }
 
 // Function to project point A onto the line defined by B and C
@@ -126,6 +105,8 @@ Point get_midpoint(const Point& A, const Point& B, const Point& C) {
         return CGAL::midpoint(C, A);
     }
 }
+
+/* Roll-back to 1st Project implementation (if delaunay boolean parameter is true)*/
 
 // Function to add Steiner points
 bool add_optimal_steiner(Triangulation& triangulation) {
@@ -194,28 +175,6 @@ bool add_optimal_steiner(Triangulation& triangulation) {
 
         // Vector to store candidate Steiner points
         std::vector<Point> candidate_points;
-
-        // For each edge of the obtuse triangle check its neighboring triangle
-        for (int i = 0; i < 3; ++i) {
-            Face_handle neighbor_fh = fh->neighbor(i);
-
-            // Check if the neighbor is finite
-            if (!triangulation.cdt.is_infinite(neighbor_fh)) {
-                // Check if the obtuse triangle and its neighbor form a convex hull
-                if (is_convex_hull(fh, neighbor_fh)) {
-                    // Get the vertices of the triangles
-                    Point shared_v1 = fh->vertex((i + 1) % 3)->point();
-                    Point shared_v2 = fh->vertex((i + 2) % 3)->point();
-                    Point tri1_opposite = fh->vertex(i)->point();
-                    Point tri2_opposite = neighbor_fh->vertex(neighbor_fh->index(fh->vertex(i)))->point();
-
-                    // Compute the centroid of the quadrilateral
-                    convex_centroid = CGAL::centroid(shared_v1, shared_v2, tri1_opposite, tri2_opposite);
-                    
-                    //candidate_points.push_back(convex_centroid);
-                }
-            }
-        }
 
         // Validation check to stay inbound
         if (is_edge_valid(edge_vertex_1, edge_vertex_2, triangulation.polygon)) {
@@ -291,16 +250,12 @@ bool add_optimal_steiner(Triangulation& triangulation) {
 }
 
 // Function to eliminate obtuse triangles
-void eliminate_obtuse_triangles(Triangulation& triangulation, int L) {
+void eliminate_obtuse_triangles(Triangulation& triangulation) {
     bool improved = true;
-    int iterations = 0;
 
     // Loop terminates when adding steiner points doesn't improve the triangulations
-    while (improved && iterations < L) {
+    while (improved) {
         improved = add_optimal_steiner(triangulation);
-        iterations++;
     }
 
-    // Result print
-    std::cout << "Total obtuse triangles: " << triangulation.count_obtuse_triangles() << std::endl;
 }
