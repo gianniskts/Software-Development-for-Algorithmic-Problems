@@ -1,0 +1,35 @@
+Η επιλογή των παραμέτρων έγινε μετά από πολλαπλές δοκιμές, με στόχο τη βέλτιστη απόδοση κάθε αλγορίθμου. Ως σημείο αναφοράς (benchmark) χρησιμοποιήθηκε το παράδειγμα της εκφώνησης.
+
+Α) Local Search
+    "parameters": {"L": 50},
+    "delaunay": true
+
+B) Simulated Annealing
+    "parameters": {
+        "alpha": 2.0,
+        "beta": 5.0,
+        "L": 100
+    },
+    "delaunay": false
+
+C) Ant Colony
+    "parameters": {
+        "alpha": 2.0,
+        "beta": 0.5,
+        "xi": 1.1,
+        "psi": 12.0,
+        "lambda": 0.999,
+        "kappa": 200,
+        "L": 50
+    },
+    "delaunay": true
+
+Τα αποτελέσματα είναι:
+Α) Obtuse triangles: 12, Steiner points: 6
+Β) Final energy: 62 Obtuse triangles: 12, Steiner points: 6
+C) Final energy: 27 Obtuse triangles: 12, Steiner points: 6
+
+Τα αποτελέσματα των αλγορίθμων Simulated Annealing και Ant Colony εμφανίζουν διακυμάνσεις από εκτέλεση σε εκτέλεση λόγω της στοχαστικής φύσης τους.
+
+Συμπέρασμα:
+Ο Local Search παρουσιάζει σταθερά αποτελέσματα, ενώ οι αλγόριθμοι Simulated Annealing και Ant Colony φαίνεται να προσφέρουν καλύτερα αποτελέσμα για πιο περίπλοκα παραδείγματα. Τα αποτελέσματα δείχνουν ότι ο Ant Colony υπερέχει του Simulated Annealing καθώς επιτυγχάνει χαμηλότερη τιμή τελικής ενέργειας, διατηρώντας παράλληλα τα ίδια επίπεδα σε αμβλυγώνεια τρίγωνα και Steiner points. Ωστόσο, η επιλογή μεταξύ των 3 μεθόδων εξαρτάται από τις απαιτήσεις σταθερότητας και πολυπλοκότητας κάθε χρήσης.
