@@ -57,8 +57,5 @@ Triangulation delaunay_const_triangulation(const InputJSON input_data) {
         eliminate_obtuse_triangles(triangulation);
     }
 
-    // Visualize CDT's results
-    CGAL::draw(triangulation.cdt, triangulation.in_domain);
-
     return triangulation;
 }

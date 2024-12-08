@@ -120,7 +120,7 @@ Triangulation local_search(const InputJSON& input) {
     }
     
     // Uncomment to visualize results
-    //CGAL::draw(triangulation.cdt, triangulation.in_domain);
+    CGAL::draw(triangulation.cdt, triangulation.in_domain);
 
     return triangulation;
 }
@@ -269,7 +269,7 @@ Triangulation simulated_annealing(const InputJSON& input) {
     std::cout << "Obtuse triangles: " << triangulation.count_obtuse_triangles() << ", Steiner points: " << num_steiner << std::endl;
 
     // Uncomment to visualize results
-    //CGAL::draw(triangulation.cdt, triangulation.in_domain);
+    CGAL::draw(triangulation.cdt, triangulation.in_domain);
 
     return triangulation;
 }
