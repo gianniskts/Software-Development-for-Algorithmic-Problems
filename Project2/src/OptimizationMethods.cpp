@@ -122,6 +122,12 @@ Triangulation local_search(const InputJSON& input) {
     // Visualize results
     CGAL::draw(triangulation.cdt, triangulation.in_domain);
 
+    // Output final results
+    int num_obtuse = triangulation.count_obtuse_triangles();
+    int num_steiner = triangulation.cdt.number_of_vertices() - input.num_points;
+    std::cout << "Final results: Obtuse triangles: " << num_obtuse
+              << ", Steiner points: " << num_steiner << std::endl;
+
     return triangulation;
 }
 
@@ -543,5 +549,7 @@ Triangulation ant_colony_optimization(const InputJSON& input) {
     std::cout << "Final energy: " << best_energy << std::endl;
     std::cout << "Obtuse triangles: " << best_num_obtuse << ", Steiner points: " << best_num_steiner << std::endl;
 
+    // Visualize results
+    CGAL::draw(best_triangulation.cdt, best_triangulation.in_domain);
     return best_triangulation;
 }
