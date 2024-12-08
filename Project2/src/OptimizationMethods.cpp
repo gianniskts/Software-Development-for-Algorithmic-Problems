@@ -119,7 +119,7 @@ Triangulation local_search(const InputJSON& input) {
         iterations++;
     }
     
-    // Uncomment to visualize results
+    // Visualize results
     CGAL::draw(triangulation.cdt, triangulation.in_domain);
 
     return triangulation;
@@ -268,7 +268,7 @@ Triangulation simulated_annealing(const InputJSON& input) {
     std::cout << "Final energy: " << energy << std::endl;
     std::cout << "Obtuse triangles: " << triangulation.count_obtuse_triangles() << ", Steiner points: " << num_steiner << std::endl;
 
-    // Uncomment to visualize results
+    // Visualize results
     CGAL::draw(triangulation.cdt, triangulation.in_domain);
 
     return triangulation;
