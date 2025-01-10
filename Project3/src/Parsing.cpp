@@ -2,7 +2,7 @@
 #include <sstream>
 #include <fstream>
 #include <boost/json/src.hpp>
-
+#include "../includes/ActionFunctions.h"
 #include "../includes/Parsing.h"
 
 #define CONTENT_TYPE "CG_SHOP_2025_Solution"
@@ -74,6 +74,23 @@ InputJSON parse_file(const std::string& filename) {
 
         if (data.parameters.count("beta") > 0) {
             data.beta = json::value_to<double>(data.parameters["beta"]);
+        }
+        if (data.parameters.count("xi") > 0) {
+            data.xi = json::value_to<double>(data.parameters["xi"]);
+        }
+        if (data.parameters.count("psi") > 0) {
+            data.psi = json::value_to<double>(data.parameters["psi"]);
+        }
+        if (data.parameters.count("lambda") > 0) {
+            data.lambda = json::value_to<double>(data.parameters["lambda"]);
+        }
+        if (data.parameters.count("kappa") > 0) {
+            data.kappa = json::value_to<int>(data.parameters["kappa"]);
+        }
+        // Possibly parse a random_deadlock_threshold
+        if (data.parameters.count("random_deadlock_threshold") > 0) {
+            data.random_deadlock_threshold =
+                json::value_to<int>(data.parameters["random_deadlock_threshold"]);
         }
     }
 
@@ -179,13 +196,65 @@ void output_results(const std::string& filename, const InputJSON& input, const T
 
     // Serialize parameters back to JSON
     json::object params_json;
-    // Serialize parameters back to JSON
-    for (const auto& param : input.parameters) {
-        params_json[param.first] = param.second;
+    params_json["alpha"]  = input.alpha;
+    params_json["beta"]   = input.beta;
+    params_json["L"]      = input.L;
+    params_json["xi"]     = input.xi;
+    params_json["psi"]    = input.psi;
+    params_json["lambda"] = input.lambda;
+    params_json["kappa"]  = input.kappa;
+
+    // Overwrite with any user-supplied parameters from input.parameters
+    // (This merges any JSON parse results with the final numeric values.)
+    for (const auto &p : input.parameters) {
+        params_json[p.first] = p.second;
     }
+
+    // Now store it
     results["parameters"] = params_json;
+    results["randomization"] = triangulation.randomizationUsed;
+
+    int num_steiner_points = triangulation.cdt.number_of_vertices() - input.num_points;
+    double final_energy = input.alpha * obtuse_count + input.beta * num_steiner_points;
+    std::ostringstream energy_stream;
+    energy_stream << std::fixed << std::setprecision(2) << final_energy;
+    results["energy"] = energy_stream.str();
+    std::cout << "[DEBUG] Final Energy: " << final_energy << " | Obtuse Count: " 
+          << obtuse_count << " | Steiner Points: " << num_steiner_points << std::endl;
+
+    std::string category = detect_category(input);
+    results["category"] = category;
 
     // Output results
     file << json::serialize(results);
     file.close();
 }
+
+std::vector<std::string> split_csv(const std::string &s) {
+    // Helper: splits a comma-separated string (e.g. "local,sa,ant") into tokens
+    std::vector<std::string> result;
+    std::stringstream ss(s);
+    while (ss.good()) {
+        std::string substr;
+        if (!std::getline(ss, substr, ',')) break;
+        // trim spaces
+        substr.erase(0, substr.find_first_not_of(" \t\r\n"));
+        substr.erase(substr.find_last_not_of(" \t\r\n") + 1);
+        if (!substr.empty()) result.push_back(substr);
+    }
+    return result;
+}
+
+std::string vector_to_string(const std::vector<std::string>& vec) {
+    std::ostringstream oss;
+    oss << "[";
+    for (size_t i = 0; i < vec.size(); ++i) {
+        oss << vec[i];
+        if (i < vec.size() - 1) {
+            oss << ", ";
+        }
+    }
+    oss << "]";
+    return oss.str();
+}
+
