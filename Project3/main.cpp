@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
                       << "Options:\n"
                       << "  -preselected_params           Use the 'auto' code path with preselected param combos.\n"
                       << "  -methods local,sa,ant         Comma-separated list of methods to run (only local|sa|ant).\n"
-                      << "  -steiner projection,mid,...   Comma-separated list of Steiner sub-methods to use (projection|mid|centroid|circumcenter). If omitted, use all.\n"
+                      << "  -steiner projection,mid,...   Comma-separated list of Steiner sub-methods to use (projection|mid|centroid|circumcenter|adjacent). If omitted, use all.\n"
                       << "  -test_subsets                 If provided, test all subsets of the chosen Steiner sub-methods.\n"
                       << "  --no-randomization            Disable random insertion of Steiner points during deadlocks.\n"
                       << std::endl;
