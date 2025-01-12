@@ -221,6 +221,7 @@ void output_results(const std::string& filename, const InputJSON& input, const T
     results["energy"] = energy_stream.str();
     std::cout << "[DEBUG] Final Energy: " << final_energy << " | Obtuse Count: " 
           << obtuse_count << " | Steiner Points: " << num_steiner_points << std::endl;
+    results["p_bar"] = triangulation.p_bar;
 
     std::string category = detect_category(input);
     results["category"] = category;

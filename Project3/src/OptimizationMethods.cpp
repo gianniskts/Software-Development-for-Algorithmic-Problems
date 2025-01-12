@@ -180,6 +180,13 @@ Triangulation local_search(const InputJSON& input) {
     int num_obtuse   = triangulation.count_obtuse_triangles();
     int num_steiner  = triangulation.cdt.number_of_vertices() - input.num_points;
     double final_energy = input.alpha * num_obtuse + input.beta * num_steiner;
+
+    double sum_p = 0.0;
+    for (double v : p_values) {
+        sum_p += v;
+    }
+    double p_bar = (p_values.empty()) ? 0.0 : sum_p / p_values.size();
+    triangulation.p_bar = p_bar;
     // Visualize results
     // CGAL::draw(triangulation.cdt, triangulation.in_domain);
 
@@ -395,6 +402,7 @@ Triangulation simulated_annealing(const InputJSON& input) {
         sum_p += v;
     }
     double p_bar = (p_values.empty()) ? 0.0 : sum_p / p_values.size();
+    triangulation.p_bar = p_bar;
     std::cout << "[simulated_annealing] p_bar = " << p_bar << std::endl;
     // Final output
     std::cout << "[simulated_annealing] Final energy: " << energy << std::endl;
@@ -734,6 +742,7 @@ Triangulation ant_colony_optimization(const InputJSON& input) {
     double sum_p = 0.0;
     for (double v : p_values) sum_p += v;
     double p_bar = (p_values.empty()) ? 0.0 : sum_p / p_values.size();
+    best_triangulation.p_bar = p_bar;
     std::cout << "[ant_colony] p_bar = " << p_bar << std::endl;
     std::cout << "[ant_colony] final energy: " << best_energy << std::endl;
     std::cout << "[ant_colony] obtuse: " << best_num_obtuse

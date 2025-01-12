@@ -12,6 +12,7 @@ public:
     std::unordered_map<CDT::Face_handle, bool> in_domain_map;
     boost::associative_property_map<std::unordered_map<CDT::Face_handle, bool>> in_domain;
     bool randomizationUsed = false;
+    double p_bar = 0.0;  
 
     // Default constructor
     Triangulation()
@@ -32,7 +33,8 @@ public:
           in_domain_map(other.in_domain_map),  // Copy the in_domain_map
           in_domain(other.in_domain),
           min_obtuse_triangles(other.min_obtuse_triangles),
-          randomizationUsed(other.randomizationUsed) {
+          randomizationUsed(other.randomizationUsed),
+          p_bar(other.p_bar) {
     }
 
     // Function to mark triangulation domain
