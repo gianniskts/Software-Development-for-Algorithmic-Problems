@@ -13,7 +13,7 @@ def run_one_experiment(instance_path, output_path, extra_args):
     Returns (exitcode, elapsed_time_seconds).
     """
     cmd = [
-        "./build/main",
+        "../build/main",
         "-i", instance_path,
         "-o", output_path
     ] + extra_args
@@ -67,8 +67,9 @@ def parse_output_json(output_path):
 
 
 def main():
-    instance_folder = "challenge_instances_cgshop25"
-    os.makedirs("results", exist_ok=True)
+    instance_folder = "../challenge_instances_cgshop25"
+    output_folder = "output"
+    os.makedirs(output_folder, exist_ok=True)
 
     instances = glob.glob(os.path.join(instance_folder, "*.json"))
 
