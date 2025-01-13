@@ -13,7 +13,7 @@ def run_one_experiment(instance_path, output_path, extra_args):
     Returns (exitcode, elapsed_time_seconds).
     """
     cmd = [
-        "../build/main",
+        "./build/main",
         "-i", instance_path,
         "-o", output_path
     ] + extra_args
@@ -67,9 +67,8 @@ def parse_output_json(output_path):
 
 
 def main():
-    instance_folder = "../challenge_instances_cgshop25"
-    output_folder = "output"
-    os.makedirs(output_folder, exist_ok=True)
+    instance_folder = "challenge_instances_cgshop25"
+    os.makedirs("results", exist_ok=True)
 
     instances = glob.glob(os.path.join(instance_folder, "*.json"))
 
@@ -90,22 +89,32 @@ def main():
     for i in range(1, len(steiner_methods) + 1):
         steiner_combinations.extend(itertools.combinations(steiner_methods, i))
 
-    csv_file = "final_results2.csv"
+    csv_file = "final_results_NEW.csv"
+    best_results_file = "best_results.csv"
     file_exists = os.path.isfile(csv_file)
+    best_file_exists = os.path.isfile(best_results_file)
 
     instance_counter = 0
     total_tests = len(instances) * len(methods) * len(steiner_combinations) * 2
 
-    with open(csv_file, "a", newline="") as f:
+    with open(csv_file, "a", newline="") as f, open(best_results_file, "a", newline="") as best_f:
         writer = csv.DictWriter(f, fieldnames=[
+            "instance", "method", "steiner_methods",
+            "randomization", "status", "time",
+            "obtuse_count", "steiner_points", "energy", "p_bar", "category"
+        ])
+        best_writer = csv.DictWriter(best_f, fieldnames=[
             "instance", "method", "steiner_methods",
             "randomization", "status", "time",
             "obtuse_count", "steiner_points", "energy", "p_bar", "category"
         ])
         if not file_exists:
             writer.writeheader()
+        if not best_file_exists:
+            best_writer.writeheader()
 
         for instance_path in instances:
+            best_result = None
             instance_counter += 1
             print(f"Running instance {instance_counter}/{instances_len}: {instance_path}")
             basename = os.path.basename(instance_path)
@@ -196,10 +205,35 @@ def main():
                             "category": data.get("category", "default")
                         })
 
-            # End of instance loop. Move on to the next instance.
-            # consecutive_failures is reset automatically for the next instance.
+                        # Update best result
+                        p_bar = data.get("p_bar", -99.9)
+                        steiner_points = data.get("steiner_points", float('inf'))
+                        energy = data.get("energy", float('inf'))
 
-    print("Done! Results saved in final_results2.csv.")
+                        if p_bar > 0:  # Converged
+                            if (best_result is None or
+                                    p_bar > best_result["p_bar"] or
+                                    (p_bar == best_result["p_bar"] and steiner_points < best_result["steiner_points"])):
+                                best_result = {
+                                    **data,
+                                    "instance": basename,
+                                    "status": "BEST",
+                                    "time": elapsed_sec
+                                }
+                        else:  # Did not converge
+                            if (best_result is None or
+                                    (best_result["p_bar"] <= 0 and energy < best_result["energy"])):
+                                best_result = {
+                                    **data,
+                                    "instance": basename,
+                                    "status": "BEST",
+                                    "time": elapsed_sec
+                                }
+
+            if best_result:
+                best_writer.writerow(best_result)
+
+    print("Done! Results saved in final_results_NEW.csv and best_results.csv")
 
 
 if __name__ == "__main__":
