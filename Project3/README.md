@@ -1,10 +1,9 @@
 # Software-Development-for-Algorithmic-Problems
 
-## 2η ΠΡΟΓΡΑΜΜΑΤΙΣΤΙΚΗ ΕΡΓΑΣΙΑ
+## 3η ΠΡΟΓΡΑΜΜΑΤΙΣΤΙΚΗ ΕΡΓΑΣΙΑ
 
 ### ΟΜΑΔΑ ΧΡΗΣΤΩΝ 24
 
-ΑΛΑΤΖΑΣ ΑΛΕΞΑΝΔΡΟΣ  - 1115201900005<br/>
 ΚΩΤΣΙΑΣ ΙΩΑΝΝΗΣ     - 1115202000113
 
 ### Κατάλογος αρχείων κώδικα
@@ -24,7 +23,14 @@
 \--- PolygonManipulation.cpp<br/>
 \-- CMakeLists.txt<br/>
 \-- main.cpp<br/>
+\-- scripts/<br/>
+\--- analyze_data.py<br/>
+\--- run_experiments.py<br/>
+\--- output<br/>
+\---- plots<br/>
+\---- summaries<br/>
 \-- README.md<br/>
+\-- research_report_kotsias.pdf<br/>
 
 ### Οδηγίες Μεταγλώττισης
 Εφόσον έχουμε εγκαταστήσει τις απαραίτητες βιβλιοθήκες σύμφωνα με τις απαιτήσεις του μαθήματος (CGAL, Qt5, boost), δημιουργούμε από το root directory ένα νέο build directory.<br/>
