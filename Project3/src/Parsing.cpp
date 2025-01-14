@@ -105,7 +105,7 @@ InputJSON parse_file(const std::string& filename) {
 }
 
 // Function for results output
-void output_results(const std::string& filename, const InputJSON& input, const Triangulation& triangulation) {
+void output_results(const std::string& filename, const InputJSON& input, const Triangulation& triangulation, bool advancedOutput) {
     
     std::ofstream file(filename);
 
@@ -218,13 +218,16 @@ void output_results(const std::string& filename, const InputJSON& input, const T
     double final_energy = input.alpha * obtuse_count + input.beta * num_steiner_points;
     std::ostringstream energy_stream;
     energy_stream << std::fixed << std::setprecision(2) << final_energy;
-    results["energy"] = energy_stream.str();
+    if(advancedOutput)
+        results["energy"] = energy_stream.str();
     std::cout << "[DEBUG] Final Energy: " << final_energy << " | Obtuse Count: " 
           << obtuse_count << " | Steiner Points: " << num_steiner_points << std::endl;
-    results["p_bar"] = triangulation.p_bar;
+    if(advancedOutput)
+        results["p_bar"] = triangulation.p_bar;
 
     std::string category = detect_category(input);
-    results["category"] = category;
+    if(advancedOutput)
+        results["category"] = category;
 
     // Output results
     file << json::serialize(results);

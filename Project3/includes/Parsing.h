@@ -20,9 +20,9 @@ struct InputJSON {
     std::string method;
     std::map<std::string, boost::json::value> parameters;
     bool delaunay;
-    int L = 50;
+    int L = 200;
     double alpha = 2.0;
-    double beta = 0.5;
+    double beta = 5.0;
     double kappa = 200.0;
     double xi = 1.1;
     double psi = 12.0;
@@ -36,7 +36,7 @@ struct InputJSON {
 InputJSON parse_file(const std::string& filename);
 
 // Set the results to JSON format
-void output_results(const std::string& filename, const InputJSON& input, const Triangulation& triangulation);
+void output_results(const std::string& filename, const InputJSON& input, const Triangulation& triangulation, bool advancedOutput);
 
 std::vector<std::string> split_csv(const std::string &s);
 
