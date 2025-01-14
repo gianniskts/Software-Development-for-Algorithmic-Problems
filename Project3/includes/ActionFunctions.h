@@ -36,4 +36,19 @@ bool add_optimal_steiner(Triangulation& triangulation);
 // Function to eliminate obtuse triangles (if possible)
 void eliminate_obtuse_triangles(Triangulation& triangulation);
 
+// Function to generate all subsets of a given set
+std::vector<std::vector<std::string>> generate_subsets(const std::vector<std::string>& items);
+
+// Function to detect the category of the input
+std::string detect_category(const InputJSON& input);
+
+// Function to insert a Steiner point near the centroid of an obtuse triangle with a Gaussian distribution (if possible)
+bool insert_gaussian_near_centroid_of_obtuse_triangle(Triangulation &triang, double sigma);
+
+// Function to compute p^n
+double compute_pn(int obtuse_prev, int obtuse_curr, int n_prev, int n_curr);
+
+// Function to randomize the triangulation if stuck in a local minimum for too long (if possible)
+void randomize_if_stuck(Triangulation &triang, int stepsWithoutImprovement, int threshold, bool randomization_enabled);
+
 #endif // ACTION_FUNCTIONS_H
