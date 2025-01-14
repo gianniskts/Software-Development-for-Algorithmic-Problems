@@ -31,10 +31,10 @@ public:
         : cdt(other.cdt),  // Copy the CDT
           polygon(other.polygon),  // Copy the Polygon
           in_domain_map(other.in_domain_map),  // Copy the in_domain_map
-          in_domain(other.in_domain),
-          min_obtuse_triangles(other.min_obtuse_triangles),
-          randomizationUsed(other.randomizationUsed),
-          p_bar(other.p_bar) {
+          in_domain(other.in_domain), // Copy the in_domain
+          min_obtuse_triangles(other.min_obtuse_triangles), // Copy the min_obtuse_triangles
+          randomizationUsed(other.randomizationUsed), // Copy the randomizationUsed
+          p_bar(other.p_bar) { // Copy the p_bar
     }
 
     // Function to mark triangulation domain

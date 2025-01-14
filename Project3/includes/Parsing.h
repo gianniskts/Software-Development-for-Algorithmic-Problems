@@ -38,8 +38,10 @@ InputJSON parse_file(const std::string& filename);
 // Set the results to JSON format
 void output_results(const std::string& filename, const InputJSON& input, const Triangulation& triangulation, bool advancedOutput);
 
+// Split a string by commas and return a vector of strings
 std::vector<std::string> split_csv(const std::string &s);
 
+// Convert a vector of strings to a single string
 std::string vector_to_string(const std::vector<std::string>& vec);
 
 #endif // PARSING_H

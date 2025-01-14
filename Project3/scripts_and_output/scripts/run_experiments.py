@@ -6,6 +6,7 @@ import json
 import time
 import os
 
+# IMPORTANT: MOVE THE SCRIPT TO THE ROOT DIRECTORY OF THE PROJECT
 
 def run_one_experiment(instance_path, output_path, extra_args):
     """
@@ -68,7 +69,7 @@ def parse_output_json(output_path):
 
 def main():
     instance_folder = "challenge_instances_cgshop25"
-    os.makedirs("results", exist_ok=True)
+    os.makedirs("best_outputs", exist_ok=True)
 
     instances = glob.glob(os.path.join(instance_folder, "*.json"))
 
@@ -89,15 +90,21 @@ def main():
     for i in range(1, len(steiner_methods) + 1):
         steiner_combinations.extend(itertools.combinations(steiner_methods, i))
 
-    csv_file = "final_results_NEW.csv"
-    best_results_file = "best_results.csv"
+    csv_file = "final_results_FINAL.csv"
+    best_results_file = "best_results_FINAL.csv"
+    best_output_file = "best_output_FINAL.csv"
+
     file_exists = os.path.isfile(csv_file)
     best_file_exists = os.path.isfile(best_results_file)
+    best_output_exists = os.path.isfile(best_output_file)
 
     instance_counter = 0
     total_tests = len(instances) * len(methods) * len(steiner_combinations) * 2
 
-    with open(csv_file, "a", newline="") as f, open(best_results_file, "a", newline="") as best_f:
+    with open(csv_file, "a", newline="") as f, \
+         open(best_results_file, "a", newline="") as best_f, \
+         open(best_output_file, "a", newline="") as best_out_f:
+
         writer = csv.DictWriter(f, fieldnames=[
             "instance", "method", "steiner_methods",
             "randomization", "status", "time",
@@ -108,13 +115,20 @@ def main():
             "randomization", "status", "time",
             "obtuse_count", "steiner_points", "energy", "p_bar", "category"
         ])
+        best_output_writer = csv.DictWriter(best_out_f, fieldnames=[
+            "instance", "output_json"
+        ])
+
         if not file_exists:
             writer.writeheader()
         if not best_file_exists:
             best_writer.writeheader()
+        if not best_output_exists:
+            best_output_writer.writeheader()
 
         for instance_path in instances:
             best_result = None
+            best_result_output_file = None
             instance_counter += 1
             print(f"Running instance {instance_counter}/{instances_len}: {instance_path}")
             basename = os.path.basename(instance_path)
@@ -220,7 +234,10 @@ def main():
                                     "status": "BEST",
                                     "time": elapsed_sec
                                 }
+                                best_result_output_file = output_file
                         else:  # Did not converge
+                            # If best_result is None or we only have non-convergent results so far,
+                            # pick the one with the lower energy (i.e., better solution):
                             if (best_result is None or
                                     (best_result["p_bar"] <= 0 and energy < best_result["energy"])):
                                 best_result = {
@@ -229,11 +246,22 @@ def main():
                                     "status": "BEST",
                                     "time": elapsed_sec
                                 }
+                                best_result_output_file = output_file
 
             if best_result:
+                # Write to best_results.csv
                 best_writer.writerow(best_result)
 
-    print("Done! Results saved in final_results_NEW.csv and best_results.csv")
+                # Also store the entire output JSON in best_output.csv
+                if best_result_output_file and os.path.isfile(best_result_output_file):
+                    with open(best_result_output_file, "r") as json_f:
+                        entire_json_str = json_f.read()
+                        best_output_writer.writerow({
+                            "instance": basename,
+                            "output_json": entire_json_str
+                        })
+
+    print("Done! Results saved in final_results_NEW.csv, best_results.csv, and best_output.csv.")
 
 
 if __name__ == "__main__":

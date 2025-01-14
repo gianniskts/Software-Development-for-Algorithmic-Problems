@@ -1,0 +1,422 @@
+Using OpenGL context 4.6 GL
+[DEBUG] Final Energy: 70 | Obtuse Count: 5 | Steiner Points: 12
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ ./build/main -i challenge_instances_cgshop25/ortho_20_5a9e8244.instance.json -o output.json -preselected_params
+Using all Steiner methods: [projection, circumcenter, midpoint]
+Running method: sa
+  Subset: [projection, circumcenter, midpoint]
+Starting simulated annealing...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[simulated_annealing] Breaking out: too many steps w/o improvement.
+[simulated_annealing] p_bar = 0.684385
+[simulated_annealing] Final energy: 29
+with parameters alpha = 2 and beta = 5
+[simulated_annealing] obtuse: 22, steiner: 12
+Computing energy for triangulation...
+Obtuse triangles: 7
+Gtk-Message: 14:24:47.442: Failed to load module "canberra-gtk-module"
+Gtk-Message: 14:24:47.442: Failed to load module "canberra-gtk-module"
+Using OpenGL context 4.6 GL
+[DEBUG] Final Energy: 70 | Obtuse Count: 5 | Steiner Points: 12
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ cd build
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3/build$ make
+[  5%] Automatic MOC for target CGAL_Qt5_moc_and_resources
+[  5%] Built target CGAL_Qt5_moc_and_resources_autogen
+[ 63%] Built target CGAL_Qt5_moc_and_resources
+Consolidate compiler generated dependencies of target main
+[ 68%] Building CXX object CMakeFiles/main.dir/main.cpp.o
+[ 73%] Linking CXX executable main
+[100%] Built target main
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3/build$ cd ..
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ ./build/main -i challenge_instances_cgshop25/ortho_20_5a9e8244.instance.json -o output.json -preselected_params
+[auto_method] Detected category: D
+Using all Steiner methods: [projection, circumcenter, midpoint]
+Running method: sa
+  Subset: [projection, circumcenter, midpoint]
+Starting simulated annealing...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[simulated_annealing] Breaking out: too many steps w/o improvement.
+[simulated_annealing] p_bar = 0.208558
+[simulated_annealing] Final energy: 34
+with parameters alpha = 2 and beta = 5
+[simulated_annealing] obtuse: 23, steiner: 13
+Computing energy for triangulation...
+Obtuse triangles: 23
+Gtk-Message: 14:25:38.745: Failed to load module "canberra-gtk-module"
+Gtk-Message: 14:25:38.746: Failed to load module "canberra-gtk-module"
+Using OpenGL context 4.6 GL
+[DEBUG] Final Energy: 107 | Obtuse Count: 21 | Steiner Points: 13
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ ./build/main -i challenge_instances_cgshop25/ortho_20_5a9e8244.instance.json -o output.json -preselected_params
+[auto_method] Detected category: D
+Using all Steiner methods: [projection, circumcenter, midpoint]
+Running method: sa
+  Subset: [projection, circumcenter, midpoint]
+Starting simulated annealing...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[simulated_annealing] Breaking out: too many steps w/o improvement.
+[simulated_annealing] p_bar = 0.558598
+[simulated_annealing] Final energy: 29
+with parameters alpha = 2 and beta = 5
+[simulated_annealing] obtuse: 18, steiner: 12
+Computing energy for triangulation...
+Obtuse triangles: 12
+Gtk-Message: 14:25:54.178: Failed to load module "canberra-gtk-module"
+Gtk-Message: 14:25:54.178: Failed to load module "canberra-gtk-module"
+Using OpenGL context 4.6 GL
+[DEBUG] Final Energy: 68 | Obtuse Count: 4 | Steiner Points: 12
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ ./build/main -i challenge_instances_cgshop25/ortho_20_5a9e8244.instance.json -o output.json -methods ant -steiner projection,circumcenter,midpoint
+Using all Steiner methods: [projection, circumcenter, midpoint]
+Running method: ant
+  Subset: [projection, circumcenter, midpoint]
+Running ant_colony_optimization with 200 ants.
+Starting ant colony optimization...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[ant_colony] Breaking out: too many cycles w/o improvement.
+[ant_colony] p_bar = 0
+[ant_colony] final energy: 29
+[ant_colony] obtuse: 7, steiner: 3
+Computing energy for triangulation...
+Obtuse triangles: 6
+Gtk-Message: 14:26:13.196: Failed to load module "canberra-gtk-module"
+Gtk-Message: 14:26:13.197: Failed to load module "canberra-gtk-module"
+Using OpenGL context 4.6 GL
+[DEBUG] Final Energy: 30 | Obtuse Count: 0 | Steiner Points: 6
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ ./build/main -i challenge_instances_cgshop25/simple-polygon-exterior-20_250_823ed1ae.instance.json -o output.json -preselected_params
+[auto_method] Detected category: B
+Using all Steiner methods: [projection, circumcenter]
+Running method: sa
+  Subset: [projection, circumcenter]
+Starting simulated annealing...
+^C
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ ./build/main -i challenge_instances_cgshop25/simple-polygon-exterior-20_150_7768dd44.instance.json -o output.json -preselected_params
+[auto_method] Detected category: B
+Using all Steiner methods: [projection, circumcenter]
+Running method: sa
+  Subset: [projection, circumcenter]
+Starting simulated annealing...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[simulated_annealing] Breaking out: too many steps w/o improvement.
+[simulated_annealing] p_bar = 0.646035
+[simulated_annealing] Final energy: 448
+with parameters alpha = 2 and beta = 5
+[simulated_annealing] obtuse: 126, steiner: 55
+Computing energy for triangulation...
+Obtuse triangles: 10
+Gtk-Message: 14:31:06.753: Failed to load module "canberra-gtk-module"
+Gtk-Message: 14:31:06.753: Failed to load module "canberra-gtk-module"
+Using OpenGL context 4.6 GL
+[DEBUG] Final Energy: 289 | Obtuse Count: 7 | Steiner Points: 55
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ cd build
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3/build$ make
+[  5%] Automatic MOC for target CGAL_Qt5_moc_and_resources
+[  5%] Built target CGAL_Qt5_moc_and_resources_autogen
+[ 63%] Built target CGAL_Qt5_moc_and_resources
+Consolidate compiler generated dependencies of target main
+[ 68%] Building CXX object CMakeFiles/main.dir/main.cpp.o
+[ 73%] Building CXX object CMakeFiles/main.dir/src/Parsing.cpp.o
+[ 78%] Building CXX object CMakeFiles/main.dir/src/PolygonManipulation.cpp.o
+[ 84%] Building CXX object CMakeFiles/main.dir/src/ActionFunctions.cpp.o
+[ 89%] Building CXX object CMakeFiles/main.dir/src/OptimizationMethods.cpp.o
+[ 94%] Linking CXX executable main
+[100%] Built target main
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3/build$ cd ..
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ ./build/main -i challenge_instances_cgshop25/simple-polygon-exterior-20_150_7768dd44.instance.json -o output.json -preselected_params
+[auto_method] Detected category: B
+Using all Steiner methods: [projection, circumcenter]
+Running method: sa
+  Subset: [projection, circumcenter]
+Starting simulated annealing...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[simulated_annealing] Breaking out: too many steps w/o improvement.
+[simulated_annealing] p_bar = 0.792511
+[simulated_annealing] Final energy: 252.5
+with parameters alpha = 2 and beta = 0.5
+[simulated_annealing] obtuse: 104, steiner: 146
+Computing energy for triangulation...
+Obtuse triangles: 35
+Gtk-Message: 14:33:19.937: Failed to load module "canberra-gtk-module"
+Gtk-Message: 14:33:19.938: Failed to load module "canberra-gtk-module"
+Using OpenGL context 4.6 GL
+[DEBUG] Final Energy: 139 | Obtuse Count: 33 | Steiner Points: 146
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ cd build make
+bash: cd: too many arguments
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ cd build
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3/build$ make
+[  5%] Automatic MOC for target CGAL_Qt5_moc_and_resources
+[  5%] Built target CGAL_Qt5_moc_and_resources_autogen
+[ 63%] Built target CGAL_Qt5_moc_and_resources
+Consolidate compiler generated dependencies of target main
+[ 68%] Building CXX object CMakeFiles/main.dir/main.cpp.o
+[ 73%] Building CXX object CMakeFiles/main.dir/src/Parsing.cpp.o
+[ 78%] Building CXX object CMakeFiles/main.dir/src/PolygonManipulation.cpp.o
+[ 84%] Building CXX object CMakeFiles/main.dir/src/ActionFunctions.cpp.o
+[ 89%] Building CXX object CMakeFiles/main.dir/src/OptimizationMethods.cpp.o
+[ 94%] Linking CXX executable main
+[100%] Built target main
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3/build$ cd ..
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ ./build/main -i challenge_instances_cgshop25/simple-polygon-exterior-20_150_7768dd44.instance.json -o output.json -preselected_params
+[auto_method] Detected category: B
+Using all Steiner methods: [projection, circumcenter]
+Running method: sa
+  Subset: [projection, circumcenter]
+Starting simulated annealing...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[simulated_annealing] Breaking out: too many steps w/o improvement.
+[simulated_annealing] p_bar = 0.49647
+[simulated_annealing] Final energy: 504
+with parameters alpha = 2 and beta = 5
+[simulated_annealing] obtuse: 121, steiner: 67
+Computing energy for triangulation...
+Obtuse triangles: 7
+Gtk-Message: 14:35:26.308: Failed to load module "canberra-gtk-module"
+Gtk-Message: 14:35:26.309: Failed to load module "canberra-gtk-module"
+Using OpenGL context 4.6 GL
+[DEBUG] Final Energy: 343 | Obtuse Count: 4 | Steiner Points: 67
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ cd build
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3/build$ make
+[  5%] Automatic MOC for target CGAL_Qt5_moc_and_resources
+[  5%] Built target CGAL_Qt5_moc_and_resources_autogen
+[ 63%] Built target CGAL_Qt5_moc_and_resources
+Consolidate compiler generated dependencies of target main
+[ 68%] Building CXX object CMakeFiles/main.dir/main.cpp.o
+[ 73%] Building CXX object CMakeFiles/main.dir/src/Parsing.cpp.o
+[ 78%] Building CXX object CMakeFiles/main.dir/src/PolygonManipulation.cpp.o
+[ 84%] Building CXX object CMakeFiles/main.dir/src/ActionFunctions.cpp.o
+[ 89%] Building CXX object CMakeFiles/main.dir/src/OptimizationMethods.cpp.o
+[ 94%] Linking CXX executable main
+[100%] Built target main
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3/build$ cd ..
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ ./build/main -i challenge_instances_cgshop25/simple-polygon-exterior-20_150_7768dd44.instance.json -o output.json -preselected_params
+[auto_method] Detected category: B
+Using all Steiner methods: [projection, circumcenter]
+Running method: sa
+  Subset: [projection, circumcenter]
+Starting simulated annealing...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[simulated_annealing] Breaking out: too many steps w/o improvement.
+[simulated_annealing] p_bar = 0.71176
+[simulated_annealing] Final energy: 492
+with parameters alpha = 2 and beta = 5
+[simulated_annealing] obtuse: 118, steiner: 67
+Computing energy for triangulation...
+Obtuse triangles: 8
+Gtk-Message: 14:37:28.183: Failed to load module "canberra-gtk-module"
+Gtk-Message: 14:37:28.184: Failed to load module "canberra-gtk-module"
+Using OpenGL context 4.6 GL
+[DEBUG] Final Energy: 343 | Obtuse Count: 4 | Steiner Points: 67
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ cd build
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3/build$ make
+[  5%] Automatic MOC for target CGAL_Qt5_moc_and_resources
+[  5%] Built target CGAL_Qt5_moc_and_resources_autogen
+[ 63%] Built target CGAL_Qt5_moc_and_resources
+Consolidate compiler generated dependencies of target main
+[ 68%] Building CXX object CMakeFiles/main.dir/main.cpp.o
+[ 73%] Building CXX object CMakeFiles/main.dir/src/Parsing.cpp.o
+[ 78%] Building CXX object CMakeFiles/main.dir/src/PolygonManipulation.cpp.o
+[ 84%] Building CXX object CMakeFiles/main.dir/src/ActionFunctions.cpp.o
+[ 89%] Building CXX object CMakeFiles/main.dir/src/OptimizationMethods.cpp.o
+[ 94%] Linking CXX executable main
+[100%] Built target main
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3/build$ cd ..
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ ./build/main -i challenge_instances_cgshop25/simple-polygon-exterior-20_150_7768dd44.instance.json -o output.json -preselected_params
+[auto_method] Detected category: B
+Using all Steiner methods: [projection, circumcenter]
+Running method: sa
+  Subset: [projection, circumcenter]
+Starting simulated annealing...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[simulated_annealing] Breaking out: too many steps w/o improvement.
+[simulated_annealing] p_bar = 0.414056
+[simulated_annealing] Final energy: 501
+with parameters alpha = 2 and beta = 5
+[simulated_annealing] obtuse: 116, steiner: 68
+Computing energy for triangulation...
+Obtuse triangles: 3
+Gtk-Message: 14:39:13.618: Failed to load module "canberra-gtk-module"
+Gtk-Message: 14:39:13.618: Failed to load module "canberra-gtk-module"
+Using OpenGL context 4.6 GL
+[DEBUG] Final Energy: 340 | Obtuse Count: 0 | Steiner Points: 68
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ ./build/main -i challenge_instances_cgshop25/simple-polygon-exterior-20_150_7768dd44.instance.json -o output.json -preselected_params
+[auto_method] Detected category: B
+Using all Steiner methods: [projection, circumcenter]
+Running method: sa
+  Subset: [projection, circumcenter]
+Starting simulated annealing...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[simulated_annealing] Breaking out: too many steps w/o improvement.
+[simulated_annealing] p_bar = 0.423606
+[simulated_annealing] Final energy: 499
+with parameters alpha = 2 and beta = 5
+[simulated_annealing] obtuse: 132, steiner: 66
+Computing energy for triangulation...
+Obtuse triangles: 2
+Gtk-Message: 14:39:50.374: Failed to load module "canberra-gtk-module"
+Gtk-Message: 14:39:50.375: Failed to load module "canberra-gtk-module"
+Using OpenGL context 4.6 GL
+[DEBUG] Final Energy: 330 | Obtuse Count: 0 | Steiner Points: 66
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ cd build
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3/build$ make
+[  5%] Automatic MOC for target CGAL_Qt5_moc_and_resources
+[  5%] Built target CGAL_Qt5_moc_and_resources_autogen
+[ 63%] Built target CGAL_Qt5_moc_and_resources
+Consolidate compiler generated dependencies of target main
+[ 68%] Building CXX object CMakeFiles/main.dir/main.cpp.o
+[ 73%] Building CXX object CMakeFiles/main.dir/src/Parsing.cpp.o
+[ 78%] Building CXX object CMakeFiles/main.dir/src/PolygonManipulation.cpp.o
+[ 84%] Building CXX object CMakeFiles/main.dir/src/ActionFunctions.cpp.o
+[ 89%] Building CXX object CMakeFiles/main.dir/src/OptimizationMethods.cpp.o
+[ 94%] Linking CXX executable main
+[100%] Built target main
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3/build$ cd .
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3/build$ cd ..
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ ./build/main -i challenge_instances_cgshop25/simple-polygon-exterior-20_150_7768dd44.instance.json -o output.json -preselected_params
+[auto_method] Detected category: B
+Using all Steiner methods: [projection, circumcenter]
+Running method: sa
+  Subset: [projection, circumcenter]
+Starting simulated annealing...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[simulated_annealing] Breaking out: too many steps w/o improvement.
+[simulated_annealing] p_bar = 0.913872
+[simulated_annealing] Final energy: 436.5
+with parameters alpha = 1 and beta = 2.5
+[simulated_annealing] obtuse: 119, steiner: 144
+Computing energy for triangulation...
+Obtuse triangles: 63
+Gtk-Message: 14:41:36.222: Failed to load module "canberra-gtk-module"
+Gtk-Message: 14:41:36.223: Failed to load module "canberra-gtk-module"
+Using OpenGL context 4.6 GL
+[DEBUG] Final Energy: 421 | Obtuse Count: 61 | Steiner Points: 144
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ ./build/main -i challenge_instances_cgshop25/simple-polygon-exterior-20_150_7768dd44.instance.json -o output.json -preselected_params
+[auto_method] Detected category: B
+Using all Steiner methods: [projection, circumcenter]
+Running method: sa
+  Subset: [projection, circumcenter]
+Starting simulated annealing...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[simulated_annealing] Breaking out: too many steps w/o improvement.
+[simulated_annealing] p_bar = 0.796883
+[simulated_annealing] Final energy: 427
+with parameters alpha = 1 and beta = 2.5
+[simulated_annealing] obtuse: 125, steiner: 139
+Computing energy for triangulation...
+Obtuse triangles: 55
+Gtk-Message: 14:42:01.695: Failed to load module "canberra-gtk-module"
+Gtk-Message: 14:42:01.695: Failed to load module "canberra-gtk-module"
+Using OpenGL context 4.6 GL
+[DEBUG] Final Energy: 401.5 | Obtuse Count: 54 | Steiner Points: 139
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ cd build
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3/build$ cd ..
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ ./build/main -i instance_3.json -o output.json
+[auto_method] Detected category: Not Convex Envelope
+[INFO] No Steiner methods specified. Using default set.
+Using all Steiner methods: [projection, midpoint, centroid, circumcenter, mean_of_adjacent]
+Running method: sa
+  Subset: [projection, midpoint, centroid, circumcenter, mean_of_adjacent]
+Starting simulated annealing...
+[simulated_annealing] No obtuse triangles left. Optimization complete.
+[simulated_annealing] p_bar = 0
+[simulated_annealing] Final energy: 10
+with parameters alpha = 2 and beta = 5
+[simulated_annealing] obtuse: 0, steiner: 2
+Computing energy for triangulation...
+Obtuse triangles: 0
+Gtk-Message: 14:44:35.567: Failed to load module "canberra-gtk-module"
+Gtk-Message: 14:44:35.568: Failed to load module "canberra-gtk-module"
+Using OpenGL context 4.6 GL
+[DEBUG] Final Energy: 10 | Obtuse Count: 0 | Steiner Points: 2
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ ./build/main -i challenge_instances_cgshop25/simple-polygon-exterior-20_150_7768dd44.instance.json -o output.json -preselected_params
+[auto_method] Detected category: B
+Using all Steiner methods: [projection, circumcenter]
+Running method: sa
+  Subset: [projection, circumcenter]
+Starting simulated annealing...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[simulated_annealing] Breaking out: too many steps w/o improvement.
+[simulated_annealing] p_bar = 0.45428
+[simulated_annealing] Final energy: 364.5
+with parameters alpha = 1 and beta = 2.5
+[simulated_annealing] obtuse: 134, steiner: 110
+Computing energy for triangulation...
+Obtuse triangles: 48
+Gtk-Message: 14:45:17.867: Failed to load module "canberra-gtk-module"
+Gtk-Message: 14:45:17.868: Failed to load module "canberra-gtk-module"
+Using OpenGL context 4.6 GL
+[DEBUG] Final Energy: 319 | Obtuse Count: 44 | Steiner Points: 110
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ cd build
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3/build$ make
+[  5%] Automatic MOC for target CGAL_Qt5_moc_and_resources
+[  5%] Built target CGAL_Qt5_moc_and_resources_autogen
+[ 63%] Built target CGAL_Qt5_moc_and_resources
+Consolidate compiler generated dependencies of target main
+[ 68%] Building CXX object CMakeFiles/main.dir/main.cpp.o
+[ 73%] Building CXX object CMakeFiles/main.dir/src/Parsing.cpp.o
+[ 78%] Building CXX object CMakeFiles/main.dir/src/PolygonManipulation.cpp.o
+[ 84%] Building CXX object CMakeFiles/main.dir/src/ActionFunctions.cpp.o
+[ 89%] Building CXX object CMakeFiles/main.dir/src/OptimizationMethods.cpp.o
+[ 94%] Linking CXX executable main
+[100%] Built target main
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3/build$ cd ..
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ ./build/main -i challenge_instances_cgshop25/simple-polygon-exterior-20_150_7768dd44.instance.json -o output.json -preselected_params
+[auto_method] Detected category: B
+Using all Steiner methods: [projection, circumcenter]
+Running method: sa
+  Subset: [projection, circumcenter]
+Starting simulated annealing...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[simulated_annealing] Breaking out: too many steps w/o improvement.
+[simulated_annealing] p_bar = 0.520813
+[simulated_annealing] Final energy: 482
+with parameters alpha = 2 and beta = 5
+[simulated_annealing] obtuse: 122, steiner: 63
+Computing energy for triangulation...
+Obtuse triangles: 8
+Gtk-Message: 14:55:59.642: Failed to load module "canberra-gtk-module"
+Gtk-Message: 14:55:59.642: Failed to load module "canberra-gtk-module"
+Using OpenGL context 4.6 GL
+[DEBUG] Final Energy: 325 | Obtuse Count: 5 | Steiner Points: 63
+(di) (base) giannis@giannis-dell-linux:~/Documents/Software-Development-for-Algorithmic-Problems/Project3$ ./build/main -i challenge_instances_cgshop25/simple-polygon-exterior-20_150_7768dd44.instance.json -o output.json -preselected_params -advanced_output
+[auto_method] Detected category: B
+Using all Steiner methods: [projection, circumcenter]
+Running method: sa
+  Subset: [projection, circumcenter]
+Starting simulated annealing...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[Randomization Triggered] Inserting random Steiner points near centroids...
+[simulated_annealing] Breaking out: too many steps w/o improvement.
+[simulated_annealing] p_bar = 0.629127
+[simulated_annealing] Final energy: 476
+with parameters alpha = 2 and beta = 5
+[simulated_annealing] obtuse: 130, steiner: 61
+Computing energy for triangulation...
+Obtuse triangles: 2
+Gtk-Message: 14:56:38.948: Failed to load module "canberra-gtk-module"
+Gtk-Message: 14:56:38.948: Failed to load module "canberra-gtk-module"
+Using OpenGL context 4.6 GL
+[DEBUG] Final Energy: 305 | Obtuse Count: 0 | Steiner Points: 61

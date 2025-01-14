@@ -13,6 +13,6 @@ struct AutoMethodResult {
 Triangulation local_search(const InputJSON& input);
 Triangulation simulated_annealing(const InputJSON& input);
 Triangulation ant_colony_optimization(const InputJSON& input);
-AutoMethodResult auto_method(const InputJSON& input);
+// AutoMethodResult auto_method(const InputJSON& input); // LEGACY
 
 #endif // OPTIMIZATION_METHODS_H

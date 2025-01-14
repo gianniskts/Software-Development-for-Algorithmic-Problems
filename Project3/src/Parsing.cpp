@@ -220,8 +220,8 @@ void output_results(const std::string& filename, const InputJSON& input, const T
     energy_stream << std::fixed << std::setprecision(2) << final_energy;
     if(advancedOutput)
         results["energy"] = energy_stream.str();
-    std::cout << "[DEBUG] Final Energy: " << final_energy << " | Obtuse Count: " 
-          << obtuse_count << " | Steiner Points: " << num_steiner_points << std::endl;
+    std::cout << "[INFO] Final Energy: " << final_energy << " | Obtuse Count: " 
+          << obtuse_count << " | Steiner Points: " << num_steiner_points << " | P_bar: " << triangulation.p_bar << std::endl;
     if(advancedOutput)
         results["p_bar"] = triangulation.p_bar;
 

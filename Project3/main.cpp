@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
                       << "  -steiner projection,mid,...   Comma-separated list of Steiner sub-methods to use (projection|mid|centroid|circumcenter|adjacent). If omitted, use all.\n"
                       << "  -test_subsets                 If provided, test all subsets of the chosen Steiner sub-methods.\n"
                       << "  --no-randomization            Disable random insertion of Steiner points during deadlocks.\n"
+                      << "  -advance_output               Adds p_bar, energy in the output file"
                       << std::endl;
             return 1;
         }
@@ -34,9 +35,10 @@ int main(int argc, char *argv[])
         std::string output_file;
 
         // Flags
-        bool use_preselected = false;
-        bool test_all_subsets = false;
-        bool randomization_enabled = true;
+        bool use_preselected = false;         // Use the preselected method with the best parameters
+        bool test_all_subsets = false;       // Test all subsets of the chosen Steiner sub-methods
+        bool randomization_enabled = true;  // Enable random insertion of Steiner points during deadlocks
+        bool advancedOutput = false;       // Adds p_bar, energy in the output file
 
         // Which methods to run
         std::vector<std::string> chosen_methods;
@@ -75,6 +77,10 @@ int main(int argc, char *argv[])
             {
                 randomization_enabled = false;
             }
+            else if (arg == "-advanced_output")
+            {
+                advancedOutput = true;
+            }
             else
             {
                 std::cerr << "Unknown or incomplete argument: " << arg << std::endl;
@@ -85,9 +91,44 @@ int main(int argc, char *argv[])
         // Parse the input file
         InputJSON input_json = parse_file(input_file);
         input_json.randomization_enabled = randomization_enabled;
+        if (input_json.method == "auto") 
+            use_preselected = true;
+        
+        if (use_preselected) // Use the preselected method with the best parameters
+        {
+            chosen_methods.push_back("sa");
+            std::string category = detect_category(input_json);
+            // std::cout << "[auto_method] Detected category: " << category << std::endl;
+            if (category == "A")
+            {
+                // A => SA + {"projection"}
+                chosen_steiner_methods = {"projection"};
+            }
+            else if (category == "B")
+            {
+                // B => SA + {"projection", "circumcenter"}
+                chosen_steiner_methods = {"projection", "circumcenter"};
+            }
+            else if (category == "C")
+            {
+                // C => SA + {"projection", "circumcenter", "centroid"}
+                chosen_steiner_methods = {"projection", "circumcenter", "centroid"};
+            }
+            else if (category == "D")
+            {
+                // D => SA + {"projection", "circumcenter", "midpoint"}
+                chosen_steiner_methods = {"projection", "circumcenter", "midpoint"};
+            }
+            else if (category == "E")
+            {
+                // E => SA + {"projection", "circumcenter"}
+                chosen_steiner_methods = {"projection", "circumcenter"};
+            }
+        }
 
         // If we have NOT specified methods from the command line,
         // fallback to the method from the JSON (which must be "local", "sa", or "ant").
+        // Input with parameters is also supported.
         if (chosen_methods.empty())
         {
             // If user never specified -methods, fallback to JSON
@@ -111,14 +152,6 @@ int main(int argc, char *argv[])
             chosen_steiner_methods = {"projection", "midpoint", "centroid", "circumcenter", "mean_of_adjacent"};
         }
 
-        // If user specified we have preselected parameters, we do the old "auto" approach
-        if (use_preselected)
-        {
-            AutoMethodResult result = auto_method(input_json);
-            output_results(output_file, result.best_input, result.triang);
-            return 0;
-        }
-
         // We'll decide which subsets to use
         std::vector<std::vector<std::string>> all_steiner_subsets;
         if (test_all_subsets)
@@ -129,7 +162,7 @@ int main(int argc, char *argv[])
         {
             // Just one "subset", which is the entire chosen set
             all_steiner_subsets.push_back(chosen_steiner_methods);
-            std::cout << "Using all Steiner methods: " << vector_to_string(chosen_steiner_methods) << std::endl;
+            // std::cout << "Using all Steiner methods: " << vector_to_string(chosen_steiner_methods) << std::endl;
         }
 
         // Helper to compute the "energy" of a triangulation for tie-breaking or picking best.
@@ -148,27 +181,27 @@ int main(int argc, char *argv[])
             std::cout << "Computing energy for triangulation...\n";
             // Now safe to call count_obtuse_triangles
             int obtuse = t.count_obtuse_triangles();
-            std::cout << "Obtuse triangles: " << obtuse << std::endl;
-            // t.mark_domain();
-            // CGAL::draw(t.cdt, t.in_domain);
+            t.mark_domain();
+            // IF WE WANT TO DRAW THE TRIANGULATION
+            CGAL::draw(t.cdt, t.in_domain);
 
-            // The difference in vertices from the original polygon is presumably the Steiner points
+            // Steiner points are the difference between the number of vertices and the number of input points
             int steiner = t.cdt.number_of_vertices() - input_json.num_points;
             return input_json.alpha * obtuse + input_json.beta * steiner;
         };
 
-        Triangulation best_overall;
-        double best_energy = 1e15;
-        bool have_best = false;
-        InputJSON best_input = input_json;
+        Triangulation best_overall;           // store the best triangulation
+        double best_energy = 1e15;           // store the best energy
+        bool have_best = false;             // flag to check if we have a valid triangulation
+        InputJSON best_input = input_json; // store the best input
 
         // For each chosen method, run it on each subset of Steiner methods
         for (const auto &method_name : chosen_methods)
         {
-            std::cout << "Running method: " << method_name << std::endl;
+            // std::cout << "Running method: " << method_name << std::endl;
             for (const auto &steiner_subset : all_steiner_subsets)
             {
-                std::cout << "  Subset: " << vector_to_string(steiner_subset) << std::endl;
+                // std::cout << "  Subset: " << vector_to_string(steiner_subset) << std::endl;
 
                 // Copy input JSON but override with the chosen Steiner subset
                 InputJSON local_input = input_json;
@@ -208,22 +241,22 @@ int main(int argc, char *argv[])
                 double e = compute_energy(T);
                 if (e < best_energy)
                 {
-                    best_energy = e;
+                    best_energy = e;  // store the best energy
                     best_overall = T; // store the best triangulation
-                    have_best = true;
-                    best_input = local_input;
+                    have_best = true; // flag to check if we have a valid triangulation
+                    best_input = local_input; // store the best input
                 }
             }
         }
 
         // If no valid triangulation was found, do a fallback
-        if (!have_best)
+        if (!have_best) 
         {
             std::cerr << "[WARNING] No triangulation produced. Returning a Delaunay fallback.\n";
             best_overall = delaunay_const_triangulation(input_json);
         }
 
-        output_results(output_file, best_input, best_overall);
+        output_results(output_file, best_input, best_overall, advancedOutput);
     }
     catch (const std::exception &e)
     {

@@ -270,21 +270,22 @@ std::vector<std::vector<std::string>> generate_subsets(const std::vector<std::st
     std::vector<std::vector<std::string>> subsets;
     size_t n = items.size();
     // We'll generate 2^n subsets
-    for (size_t mask = 1; mask < (1UL << n); ++mask)
+    for (size_t mask = 1; mask < (1UL << n); ++mask) // Skip the empty set (mask = 0)
     {
-        std::vector<std::string> subset;
-        for (size_t bit = 0; bit < n; ++bit)
+        std::vector<std::string> subset; // Create a new subset
+        for (size_t bit = 0; bit < n; ++bit) // Check each bit in the mask
         {
-            if (mask & (1UL << bit))
+            if (mask & (1UL << bit)) // If the bit is set
             {
-                subset.push_back(items[bit]);
+                subset.push_back(items[bit]); // Add the corresponding item to the subset
             }
         }
-        subsets.push_back(subset);
+        subsets.push_back(subset); // Add the subset to the list of subsets
     }
     return subsets;
 }
 
+// Function to check if a polygon is convex
 static bool is_polygon_convex(const Polygon_2 &poly)
 {
     return poly.is_convex();
@@ -293,16 +294,16 @@ static bool is_polygon_convex(const Polygon_2 &poly)
 // Check if all edges of the given boundary polygon are strictly horizontal or vertical.
 static bool all_boundary_edges_axis_aligned(const Polygon_2 &boundary)
 {
-    for (std::size_t i = 0; i < boundary.size(); i++)
+    for (std::size_t i = 0; i < boundary.size(); i++) // Iterate over all edges
     {
-        const Point &p1 = boundary[i];
-        const Point &p2 = boundary[(i + 1) % boundary.size()];
-        double x1 = CGAL::to_double(p1.x());
-        double y1 = CGAL::to_double(p1.y());
+        const Point &p1 = boundary[i]; // Current point
+        const Point &p2 = boundary[(i + 1) % boundary.size()]; // Next point
+        double x1 = CGAL::to_double(p1.x()); // Convert to double
+        double y1 = CGAL::to_double(p1.y()); 
         double x2 = CGAL::to_double(p2.x());
         double y2 = CGAL::to_double(p2.y());
         // If neither x nor y is the same, it's not axis-aligned
-        if (x1 != x2 && y1 != y2)
+        if (x1 != x2 && y1 != y2) 
         {
             return false;
         }
@@ -311,16 +312,17 @@ static bool all_boundary_edges_axis_aligned(const Polygon_2 &boundary)
 }
 
 // Function to check if the boundary is identical to the convex envelope
+// convex envelope is the smallest convex polygon that encloses all points
 static bool is_identical_to_convex_envelope(const std::vector<Point> &boundary,
                                             const std::vector<Point> &all_points)
 {
     // Step 1: Reconstruct the convex hull of all points
-    std::vector<Point> convex_hull_points;
-    CGAL::convex_hull_2(all_points.begin(), all_points.end(), std::back_inserter(convex_hull_points));
+    std::vector<Point> convex_hull_points; // Convex hull points
+    CGAL::convex_hull_2(all_points.begin(), all_points.end(), std::back_inserter(convex_hull_points)); // Compute convex hull
 
     // Step 2: Compare the convex hull with the boundary
     // Ensure both have the same size
-    if (convex_hull_points.size() != boundary.size())
+    if (convex_hull_points.size() != boundary.size()) 
     {
         return false;
     }
@@ -333,9 +335,9 @@ static bool is_identical_to_convex_envelope(const std::vector<Point> &boundary,
         std::rotate(points.begin(), min_it, points.end());
     };
 
-    std::vector<Point> normalized_boundary = boundary;
-    normalize_sequence(convex_hull_points);
-    normalize_sequence(normalized_boundary);
+    std::vector<Point> normalized_boundary = boundary; // Copy boundary
+    normalize_sequence(convex_hull_points); // Normalize convex hull
+    normalize_sequence(normalized_boundary); // Normalize boundary
 
     // Step 4: Compare normalized sequences
     return std::equal(convex_hull_points.begin(), convex_hull_points.end(), normalized_boundary.begin());
@@ -347,23 +349,23 @@ static bool is_constraints_closed_or_on_boundary(const InputJSON &input,
                                                  const Polygon_2 &boundary)
 {
     // 1) Make a set of boundary edges in canonical form (minIndex,maxIndex)
-    std::unordered_set<std::pair<int, int>, boost::hash<std::pair<int, int>>> boundaryEdges;
-    auto makeEdge = [&](int a, int b)
+    std::unordered_set<std::pair<int, int>, boost::hash<std::pair<int, int>>> boundaryEdges; // Set of boundary edges
+    auto makeEdge = [&](int a, int b) // Helper lambda to make an edge
     {
-        return std::make_pair(std::min(a, b), std::max(a, b));
+        return std::make_pair(std::min(a, b), std::max(a, b)); // Canonical form
     };
-    for (std::size_t i = 0; i < input.region_boundary.size(); i++)
+    for (std::size_t i = 0; i < input.region_boundary.size(); i++) // Iterate over all boundary points
     {
-        int curr = input.region_boundary[i];
-        int nxt = input.region_boundary[(i + 1) % input.region_boundary.size()];
-        boundaryEdges.insert(makeEdge(curr, nxt));
+        int curr = input.region_boundary[i]; // Current point
+        int nxt = input.region_boundary[(i + 1) % input.region_boundary.size()]; // Next point
+        boundaryEdges.insert(makeEdge(curr, nxt)); // Insert the edge
     }
 
     // 2) Check if any constraint is exactly a boundary edge
     for (auto &ac : input.additional_constraints)
     {
-        auto e = makeEdge(ac.first, ac.second);
-        if (boundaryEdges.find(e) != boundaryEdges.end())
+        auto e = makeEdge(ac.first, ac.second); // Canonical form
+        if (boundaryEdges.find(e) != boundaryEdges.end()) // If the edge is in the boundary
         {
             // This constraint is exactly on the boundary --> "closed"
             return true;
@@ -371,27 +373,27 @@ static bool is_constraints_closed_or_on_boundary(const InputJSON &input,
     }
 
     // 3) Build adjacency to detect interior cycles
-    std::unordered_map<int, std::vector<int>> adj;
-    for (auto &ac : input.additional_constraints)
+    std::unordered_map<int, std::vector<int>> adj; // Adjacency list
+    for (auto &ac : input.additional_constraints) // Iterate over all constraints
     {
-        adj[ac.first].push_back(ac.second);
-        adj[ac.second].push_back(ac.first);
+        adj[ac.first].push_back(ac.second); // Add to adjacency
+        adj[ac.second].push_back(ac.first); // Add to adjacency
     }
 
-    std::unordered_set<int> visited;
-    std::function<bool(int, int)> dfsDetectCycle = [&](int node, int parent) -> bool
+    std::unordered_set<int> visited; // Visited set 
+    std::function<bool(int, int)> dfsDetectCycle = [&](int node, int parent) -> bool // DFS to detect cycle
     {
-        visited.insert(node);
-        for (int nbr : adj[node])
+        visited.insert(node); // Mark as visited
+        for (int nbr : adj[node]) // Iterate over neighbors
         {
-            if (nbr == parent)
+            if (nbr == parent) 
                 continue; // skip edge we came from
-            if (visited.find(nbr) != visited.end())
+            if (visited.find(nbr) != visited.end()) // If already visited
             {
                 // Found a back edge => cycle
                 return true;
             }
-            else if (dfsDetectCycle(nbr, node))
+            else if (dfsDetectCycle(nbr, node)) // Recurse
             {
                 return true;
             }
@@ -400,12 +402,12 @@ static bool is_constraints_closed_or_on_boundary(const InputJSON &input,
     };
 
     // 4) DFS from each unvisited node to check if there's a cycle
-    for (auto &kv : adj)
+    for (auto &kv : adj) // Iterate over all constraints
     {
-        int start = kv.first;
-        if (visited.find(start) == visited.end())
+        int start = kv.first; // Start node
+        if (visited.find(start) == visited.end()) // If not visited
         {
-            if (dfsDetectCycle(start, -1))
+            if (dfsDetectCycle(start, -1)) // DFS to detect cycle
             {
                 return true; // found a cycle => "closed"
             }
@@ -416,6 +418,7 @@ static bool is_constraints_closed_or_on_boundary(const InputJSON &input,
     return false;
 }
 
+// Function to detect the category of the input polygon
 std::string detect_category(const InputJSON &input)
 {
     // 1) Reconstruct the region boundary polygon
@@ -427,39 +430,39 @@ std::string detect_category(const InputJSON &input)
 
     // Convert boundary polygon to a vector of Points
     std::vector<Point> boundary_points;
-    for (auto it = boundary.vertices_begin(); it != boundary.vertices_end(); ++it)
+    for (auto it = boundary.vertices_begin(); it != boundary.vertices_end(); ++it) // Iterate over all vertices
     {
-        boundary_points.push_back(*it);
+        boundary_points.push_back(*it); // Add the vertex
     }
 
     // Convert all input points to a vector of CGAL Points for convex envelope verification
-    std::vector<Point> all_points;
-    for (size_t i = 0; i < input.points_x.size(); ++i)
+    std::vector<Point> all_points; // All points
+    for (size_t i = 0; i < input.points_x.size(); ++i) // Iterate over all points
     {
-        all_points.push_back(Point(input.points_x[i], input.points_y[i]));
+        all_points.push_back(Point(input.points_x[i], input.points_y[i])); // Add the point
     }
 
     // 2) Check if boundary is convex
     bool polygon_is_convex = is_polygon_convex(boundary);
-    int c = input.num_constraints;
+    int c = input.num_constraints; // Number of constraints
 
     // 3) Handle the convex vs. non-convex boundary separately
     if (polygon_is_convex)
     {
-        bool is_convex_envelope = is_identical_to_convex_envelope(boundary_points, all_points);
-        if (!is_convex_envelope)
+        bool is_convex_envelope = is_identical_to_convex_envelope(boundary_points, all_points); // Check if boundary is convex envelope
+        if (!is_convex_envelope) // If not convex envelope
         {
             return "Not Convex Envelope";
         }
         // --- Category A ---
         // Convex boundary, no constraints
-        if (c == 0)
+        if (c == 0) 
         {
             return "A";
         }
 
         // We have constraints -> decide if "closed" or "open"
-        bool closedConstraints = is_constraints_closed_or_on_boundary(input, boundary);
+        bool closedConstraints = is_constraints_closed_or_on_boundary(input, boundary); // Check if constraints are "closed"
 
         if (closedConstraints)
         {
@@ -478,8 +481,8 @@ std::string detect_category(const InputJSON &input)
     {
         // Non-convex boundary -> check for Category D or else E
         // Category D: Non-convex boundary with axis-aligned edges and no constraints
-        bool boundary_is_axis_aligned = all_boundary_edges_axis_aligned(boundary);
-        if (c == 0 && boundary_is_axis_aligned)
+        bool boundary_is_axis_aligned = all_boundary_edges_axis_aligned(boundary); // Check if all edges are axis-aligned
+        if (c == 0 && boundary_is_axis_aligned) 
         {
             return "D";
         }
@@ -499,13 +502,13 @@ bool insert_gaussian_near_centroid_of_obtuse_triangle(
     // 1) Collect all obtuse triangles in the domain
     std::vector<Face_handle> obtuse_faces;
     for (auto face_it = triang.cdt.finite_faces_begin();
-         face_it != triang.cdt.finite_faces_end(); ++face_it)
+         face_it != triang.cdt.finite_faces_end(); ++face_it) // Iterate over all faces
     {
-        if (!triang.is_face_in_domain(face_it)) continue;
+        if (!triang.is_face_in_domain(face_it)) continue; // Skip if not in domain
         Point p0 = face_it->vertex(0)->point();
         Point p1 = face_it->vertex(1)->point();
         Point p2 = face_it->vertex(2)->point();
-        if (is_obtuse(p0, p1, p2)) {
+        if (is_obtuse(p0, p1, p2)) { // If the triangle is obtuse
             obtuse_faces.push_back(face_it);
         }
     }
@@ -518,34 +521,34 @@ bool insert_gaussian_near_centroid_of_obtuse_triangle(
     // 2) Randomly pick one obtuse face
     static std::mt19937 rng(
         std::chrono::steady_clock::now().time_since_epoch().count()
-    );
-    std::uniform_int_distribution<size_t> face_dist(0, obtuse_faces.size() - 1);
-    Face_handle fh = obtuse_faces[face_dist(rng)];
+    ); // Random number generator
+    std::uniform_int_distribution<size_t> face_dist(0, obtuse_faces.size() - 1);  // Randomly select obtuse triangle
+    Face_handle fh = obtuse_faces[face_dist(rng)]; // Selected obtuse triangle
 
     // 3) Compute the centroid of this triangle
     Point p0 = fh->vertex(0)->point();
     Point p1 = fh->vertex(1)->point();
     Point p2 = fh->vertex(2)->point();
-    Point centroid = CGAL::centroid(p0, p1, p2);
+    Point centroid = CGAL::centroid(p0, p1, p2); // Centroid of the triangle
 
-    double cx = CGAL::to_double(centroid.x());
-    double cy = CGAL::to_double(centroid.y());
+    double cx = CGAL::to_double(centroid.x()); // Centroid coordinates
+    double cy = CGAL::to_double(centroid.y()); // Centroid coordinates
 
     // 4) Prepare to generate random offsets using a Gaussian distribution
-    std::normal_distribution<double> normal_dist(0.0, sigma);
+    std::normal_distribution<double> normal_dist(0.0, sigma); // Normal distribution for (dx, dy) offsets
 
     // 5) Attempt multiple times to get a valid point that is inside the domain
-    const int maxAttempts = 10;  // Adjust as needed
-    for (int attempt = 0; attempt < maxAttempts; ++attempt) {
-        double dx = normal_dist(rng);
-        double dy = normal_dist(rng);
+    const int maxAttempts = 10;  // Maximum number of attempts
+    for (int attempt = 0; attempt < maxAttempts; ++attempt) { // Try multiple times
+        double dx = normal_dist(rng); // Random offset
+        double dy = normal_dist(rng); // Random offset
 
-        Point new_steiner(cx + dx, cy + dy);
+        Point new_steiner(cx + dx, cy + dy); // New Steiner point
 
         // Check if this point is located inside the domain
-        CDT::Locate_type lt;
-        int li;
-        Face_handle locatedFace = triang.cdt.locate(new_steiner, lt, li);
+        CDT::Locate_type lt; // Location type
+        int li; // Location index
+        Face_handle locatedFace = triang.cdt.locate(new_steiner, lt, li); // Locate the point
 
         // We consider a point valid if:
         //   1) it is not located at an infinite face/edge/vertex
@@ -573,18 +576,19 @@ double compute_pn(int obtuse_prev, int obtuse_curr, int n_prev, int n_curr) {
         // Once we’re at 0 obtuse, we typically stop measuring or return 0
         return 0.0;
     }
-    if (n_curr <= 1 || n_prev <= 1) {
+    if (n_curr <= 1 || n_prev <= 1) { // Avoid division by zero
         return 0.0;
     }
 
-    double top    = std::log( (double)obtuse_prev / (double)obtuse_curr );
-    double bottom = std::log( (double)n_prev     / (double)n_curr     );
-    if (std::fabs(bottom) < 1e-12) {
+    double top    = std::log( (double)obtuse_prev / (double)obtuse_curr ); // Logarithm of the ratio of obtuse triangles
+    double bottom = std::log( (double)n_prev     / (double)n_curr     );    // Logarithm of the ratio of vertices
+    if (std::fabs(bottom) < 1e-12) { // if denominator is too small, return 0 to avoid division by zero
         return 0.0;
     }
     return std::fabs(top) / std::fabs(bottom);
 }
 
+// Randomization trigger: if we're stuck for too long, insert random Steiner points
 void randomize_if_stuck(
     Triangulation &triang, 
     int stepsWithoutImprovement,
@@ -595,10 +599,10 @@ void randomize_if_stuck(
         return;
     }
 
-    static int randomCountGlobal = 0;
-    static const int maxRandomGlobal = 3;
+    static int randomCountGlobal = 0; // Global counter for randomization
+    static const int maxRandomGlobal = 3; // Maximum number of randomizations
 
-    if (stepsWithoutImprovement >= threshold && (randomCountGlobal < maxRandomGlobal))
+    if (stepsWithoutImprovement >= threshold && (randomCountGlobal < maxRandomGlobal)) // if we're stuck
     {
         std::cout << "[Randomization Triggered] Inserting random Steiner points near centroids...\n";
 
@@ -610,7 +614,7 @@ void randomize_if_stuck(
             if (!success) break;
         }
 
-        ++randomCountGlobal;
+        ++randomCountGlobal; // update the global counter for randomization
     }
 }
 

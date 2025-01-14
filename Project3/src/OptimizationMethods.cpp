@@ -9,7 +9,7 @@
 #include "../includes/draw.h"
 
 Triangulation local_search(const InputJSON& input) {
-    std::cout << "Starting local search...\n";
+    // std::cout << "Starting local search...\n";
     Triangulation triangulation = delaunay_const_triangulation(input);
     
     bool improved = true;
@@ -167,13 +167,13 @@ Triangulation local_search(const InputJSON& input) {
         }
 
         // measure p(n)
-        int obtuse_curr = triangulation.count_obtuse_triangles();
-        int sp_curr     = triangulation.cdt.number_of_vertices();
-        double pvalue   = compute_pn(obtuse_prev, obtuse_curr, sp_prev, sp_curr);
-        p_values.push_back(pvalue);
+        int obtuse_curr = triangulation.count_obtuse_triangles(); // current obtuse count
+        int sp_curr     = triangulation.cdt.number_of_vertices(); // current steiner points count
+        double pvalue   = compute_pn(obtuse_prev, obtuse_curr, sp_prev, sp_curr); // compute p(n)
+        p_values.push_back(pvalue); // store p(n)
 
-        obtuse_prev = obtuse_curr;
-        sp_prev     = sp_curr;
+        obtuse_prev = obtuse_curr; // update obtuse count
+        sp_prev     = sp_curr;    // update steiner points count
     }
 
     // Compute final energy using the same alpha/beta as other methods
@@ -181,12 +181,12 @@ Triangulation local_search(const InputJSON& input) {
     int num_steiner  = triangulation.cdt.number_of_vertices() - input.num_points;
     double final_energy = input.alpha * num_obtuse + input.beta * num_steiner;
 
-    double sum_p = 0.0;
-    for (double v : p_values) {
+    double sum_p = 0.0; // sum of p(n)
+    for (double v : p_values) { // compute p_bar
         sum_p += v;
     }
-    double p_bar = (p_values.empty()) ? 0.0 : sum_p / p_values.size();
-    triangulation.p_bar = p_bar;
+    double p_bar = (p_values.empty()) ? 0.0 : sum_p / p_values.size(); // average p(n)
+    triangulation.p_bar = p_bar; // store p_bar
     // Visualize results
     // CGAL::draw(triangulation.cdt, triangulation.in_domain);
 
@@ -200,7 +200,7 @@ Triangulation local_search(const InputJSON& input) {
 }
 
 Triangulation simulated_annealing(const InputJSON& input) {
-    std::cout << "Starting simulated annealing...\n";
+    // std::cout << "Starting simulated annealing...\n";
     // Get parameters from input
     double alpha = input.alpha; // Weight for obtuse triangles in the energy function
     double beta = input.beta;   // Weight for Steiner points in the energy function
@@ -214,23 +214,23 @@ Triangulation simulated_annealing(const InputJSON& input) {
 
     // Initial energy
     // Energy function combines penalties for obtuse triangles and Steiner points
-    int num_obtuse = triangulation.count_obtuse_triangles();
-    int num_steiner = triangulation.cdt.number_of_vertices() - input.num_points;
-    double energy = alpha * num_obtuse + beta * num_steiner;
+    int num_obtuse = triangulation.count_obtuse_triangles(); // Number of obtuse triangles
+    int num_steiner = triangulation.cdt.number_of_vertices() - input.num_points; // Number of Steiner points
+    double energy = alpha * num_obtuse + beta * num_steiner; // Energy function
 
     // Random number generator for probabilistic acceptance of "bad" moves
-    std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count());
-    std::uniform_real_distribution<double> uni_dist(0.0, 1.0);
+    std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count()); // Seed with current time
+    std::uniform_real_distribution<double> uni_dist(0.0, 1.0); // Uniform distribution [0, 1]
 
     // Rate of temperature decrease
     double T_decrement = 1.0 / L; // Decrease temperature by 1/L each iteration
     
     // For p(n)
-    std::vector<double> p_values;
-    p_values.reserve(L + 1);
+    std::vector<double> p_values; // store p(n) values
+    p_values.reserve(L + 1); // reserve space for p(n) values
 
     // For deadlock detection
-    int stepsWithoutImprovement = 0;
+    int stepsWithoutImprovement = 0; // Number of steps without improvement
     int obtuse_prev = num_obtuse;
     int sp_prev     = triangulation.cdt.number_of_vertices();
 
@@ -295,7 +295,7 @@ Triangulation simulated_annealing(const InputJSON& input) {
                     candidate_points.push_back(midpoint);
                 }
             }
-
+            // Check if the method is specified in the input
             if (std::find(input.steiner_methods.begin(), input.steiner_methods.end(), "circumcenter") 
             != input.steiner_methods.end()) {
                 if (!triangulation.cdt.is_infinite(triangulation.cdt.locate(circumcenter))) {
@@ -323,12 +323,12 @@ Triangulation simulated_annealing(const InputJSON& input) {
 
             // Randomly select one candidate point to insert
             std::uniform_int_distribution<size_t> candidate_dist(0, candidate_points.size() - 1);
-            Point& candidate = candidate_points[candidate_dist(rng)];
+            Point& candidate = candidate_points[candidate_dist(rng)]; // Randomly select a candidate point
 
             // Create a copy of the triangulation
-            Triangulation tcopy(triangulation);
-            tcopy.cdt.insert(candidate);
-            tcopy.mark_domain();
+            Triangulation tcopy(triangulation); // Copy the triangulation
+            tcopy.cdt.insert(candidate); // Insert the candidate point
+            tcopy.mark_domain(); // Mark the domain
 
             // Calculate new energy
             int new_num_obtuse = tcopy.count_obtuse_triangles();
@@ -336,7 +336,7 @@ Triangulation simulated_annealing(const InputJSON& input) {
             double new_energy = alpha * new_num_obtuse + beta * new_num_steiner;
 
             // Calculate the energy difference ΔE
-            double delta_energy = new_energy - energy;
+            double delta_energy = new_energy - energy; // ΔE = E_new - E_current
 
             // Metropolis criterion: accept new state probabilistically if ΔE > 0
             if (delta_energy < 0) {
@@ -368,28 +368,28 @@ Triangulation simulated_annealing(const InputJSON& input) {
         }
 
         if (improved) {
-            stepsWithoutImprovement = 0;
+            stepsWithoutImprovement = 0; // reset
         } else {
-            stepsWithoutImprovement++;
+            stepsWithoutImprovement++; // increment
         }
 
-        // Possibly randomize
+        // Possibly randomize if stuck in a local minimum
         randomize_if_stuck(triangulation, stepsWithoutImprovement, input.random_deadlock_threshold, input.randomization_enabled);
 
-        // If we remain stuck for too long, break
+        // If we remain stuck for too long, break (avoid infinite loop) 
         if (stepsWithoutImprovement >= loopNoProgressLimit) {
             std::cerr << "[simulated_annealing] Breaking out: too many steps w/o improvement.\n";
             break;
         }
 
-        // measure p(n)
-        int obtuse_curr = triangulation.count_obtuse_triangles();
-        int sp_curr     = triangulation.cdt.number_of_vertices();
-        double pvalue   = compute_pn(obtuse_prev, obtuse_curr, sp_prev, sp_curr);
-        p_values.push_back(pvalue);
+        // measure p(n) and store it
+        int obtuse_curr = triangulation.count_obtuse_triangles(); // current obtuse count
+        int sp_curr     = triangulation.cdt.number_of_vertices(); // current steiner points count 
+        double pvalue   = compute_pn(obtuse_prev, obtuse_curr, sp_prev, sp_curr); // compute p(n)
+        p_values.push_back(pvalue); // store p(n)
 
-        obtuse_prev = obtuse_curr;
-        sp_prev     = sp_curr;
+        obtuse_prev = obtuse_curr; // update obtuse count
+        sp_prev     = sp_curr;    // update steiner points count
 
         // Decrease temperature
         temperature -= T_decrement;
@@ -397,11 +397,11 @@ Triangulation simulated_annealing(const InputJSON& input) {
     }
 
     // Compute average p-bar
-    double sum_p = 0.0;
-    for (double v : p_values) {
+    double sum_p = 0.0; // sum of p(n)
+    for (double v : p_values) { // compute p_bar
         sum_p += v;
     }
-    double p_bar = (p_values.empty()) ? 0.0 : sum_p / p_values.size();
+    double p_bar = (p_values.empty()) ? 0.0 : sum_p / p_values.size(); // average p(n)
     triangulation.p_bar = p_bar;
     std::cout << "[simulated_annealing] p_bar = " << p_bar << std::endl;
     // Final output
@@ -417,7 +417,7 @@ Triangulation simulated_annealing(const InputJSON& input) {
 }
 
 Triangulation ant_colony_optimization(const InputJSON& input) {
-    std::cout << "Starting ant colony optimization...\n";
+    // std::cout << "Starting ant colony optimization...\n";
     // Step 1: Extract parameters from the input JSON
     double alpha = input.alpha;   // Weight for obtuse triangles in energy calculation
     double beta = input.beta;     // Weight for Steiner points in energy calculation
@@ -753,208 +753,213 @@ Triangulation ant_colony_optimization(const InputJSON& input) {
     return best_triangulation;
 }
 
-AutoMethodResult auto_method(const InputJSON& original_input) 
-{
-    // 1) Detect which category the input belongs to (if you still want to track it)
-    std::string category = detect_category(original_input);
-    std::cout << "[auto_method] Detected category: " << category << std::endl;
+// // Auto method is an advanced method that tries to find the best triangulation
+// // by running multiple methods with different parameter combinations. Automatically.
+// // This method is not required by the assignment, but it can be used to find the best
+// // triangulation for a given input. It tries all methods with multiple parameter combinations.
+// // The best triangulation is selected based on the energy function. 
+// AutoMethodResult auto_method(const InputJSON& original_input) 
+// {
+//     // 1) Detect which category the input belongs to (if you still want to track it)
+//     std::string category = detect_category(original_input);
+//     std::cout << "[auto_method] Detected category: " << category << std::endl;
 
-    // 2) We will try ALL methods with multiple param combinations, 
-    //    ignoring the category-based selection. 
-    //    The category can, if you wish, prune some parameter sets or methods, 
-    //    but the assignment says we must check all. So let's do it.
+//     // 2) We will try ALL methods with multiple param combinations, 
+//     //    ignoring the category-based selection. 
+//     //    The category can, if you wish, prune some parameter sets or methods, 
+//     //    but the assignment says we must check all. So let's do it.
 
-    Triangulation best_triang;
-    InputJSON     best_input;  // Will hold the method/params for the best triang
-    double        best_energy  = std::numeric_limits<double>::infinity();
-    bool          found_best   = false;
+//     Triangulation best_triang;
+//     InputJSON     best_input;  // Will hold the method/params for the best triang
+//     double        best_energy  = std::numeric_limits<double>::infinity();
+//     bool          found_best   = false;
 
-    // Helper lambda to evaluate energy of a triangulation
-    auto compute_energy = [&](const Triangulation& t, const InputJSON& in) {
-        int obtuse  = t.count_obtuse_triangles();
-        int steiner = t.cdt.number_of_vertices() - in.num_points;
-        return (in.alpha * obtuse) + (in.beta * steiner);
-    };
+//     // Helper lambda to evaluate energy of a triangulation
+//     auto compute_energy = [&](const Triangulation& t, const InputJSON& in) {
+//         int obtuse  = t.count_obtuse_triangles();
+//         int steiner = t.cdt.number_of_vertices() - in.num_points;
+//         return (in.alpha * obtuse) + (in.beta * steiner);
+//     };
 
-    // Make local copies of input to override parameters on each test
-    // so we don't mutate the original.
-    auto run_local_search = [&](int I) {
-        InputJSON tmp = original_input;
-        tmp.method = "local";
-        // We store the local search iteration limit in tmp.L or in parameters map
-        tmp.parameters["I"] = boost::json::value(I);
-        tmp.L = I;  // If your local_search code reads from L
-        tmp.parameters["L"] = I;
-        Triangulation triang = local_search(tmp);
+//     // Make local copies of input to override parameters on each test
+//     // so we don't mutate the original.
+//     auto run_local_search = [&](int I) {
+//         InputJSON tmp = original_input;
+//         tmp.method = "local";
+//         // We store the local search iteration limit in tmp.L or in parameters map
+//         tmp.parameters["I"] = boost::json::value(I);
+//         tmp.L = I;  // If your local_search code reads from L
+//         tmp.parameters["L"] = I;
+//         Triangulation triang = local_search(tmp);
 
-        double energy = compute_energy(triang, tmp);
-        if (energy < best_energy) {
-            best_energy    = energy;
-            best_triang    = triang;
-            best_input   = tmp;
-            found_best     = true;
-        }
-    };
+//         double energy = compute_energy(triang, tmp);
+//         if (energy < best_energy) {
+//             best_energy    = energy;
+//             best_triang    = triang;
+//             best_input   = tmp;
+//             found_best     = true;
+//         }
+//     };
 
-    auto run_sim_anneal = [&](double a, double b, int Lval) {
-        InputJSON tmp = original_input;
-        tmp.method = "sa";
-        tmp.alpha  = a;
-        tmp.parameters["alpha"] = a;
-        tmp.beta   = b;
-        tmp.parameters["beta"] = b;
-        tmp.L      = Lval;
-        tmp.parameters["L"] = Lval;
-        Triangulation triang = simulated_annealing(tmp);
+//     auto run_sim_anneal = [&](double a, double b, int Lval) {
+//         InputJSON tmp = original_input;
+//         tmp.method = "sa";
+//         tmp.alpha  = a;
+//         tmp.parameters["alpha"] = a;
+//         tmp.beta   = b;
+//         tmp.parameters["beta"] = b;
+//         tmp.L      = Lval;
+//         tmp.parameters["L"] = Lval;
+//         Triangulation triang = simulated_annealing(tmp);
 
-        double energy = compute_energy(triang, tmp);
-        if (energy < best_energy) {
-            best_energy = energy;
-            best_triang = triang;
-            best_input   = tmp;
-            found_best  = true;
-        }
-    };
+//         double energy = compute_energy(triang, tmp);
+//         if (energy < best_energy) {
+//             best_energy = energy;
+//             best_triang = triang;
+//             best_input   = tmp;
+//             found_best  = true;
+//         }
+//     };
 
-    auto run_ant_colony = [&](double a, double b, double x, double p, double lam, int kappa_val, int Lval) {
-        InputJSON tmp = original_input;
-        tmp.method  = "ant";
-        tmp.alpha   = a;
-        tmp.parameters["alpha"] = a;
-        tmp.beta    = b;
-        tmp.parameters["beta"] = b;
-        tmp.xi      = x;
-        tmp.parameters["xi"] = x;
-        tmp.psi     = p;
-        tmp.parameters["psi"] = p;
-        tmp.lambda  = lam;
-        tmp.parameters["lambda"] = lam;
-        tmp.kappa   = kappa_val;
-        tmp.parameters["kappa"] = kappa_val;
-        tmp.L       = Lval;
-        tmp.parameters["L"] = Lval;
+//     auto run_ant_colony = [&](double a, double b, double x, double p, double lam, int kappa_val, int Lval) {
+//         InputJSON tmp = original_input;
+//         tmp.method  = "ant";
+//         tmp.alpha   = a;
+//         tmp.parameters["alpha"] = a;
+//         tmp.beta    = b;
+//         tmp.parameters["beta"] = b;
+//         tmp.xi      = x;
+//         tmp.parameters["xi"] = x;
+//         tmp.psi     = p;
+//         tmp.parameters["psi"] = p;
+//         tmp.lambda  = lam;
+//         tmp.parameters["lambda"] = lam;
+//         tmp.kappa   = kappa_val;
+//         tmp.parameters["kappa"] = kappa_val;
+//         tmp.L       = Lval;
+//         tmp.parameters["L"] = Lval;
 
-        Triangulation triang = ant_colony_optimization(tmp);
-        double energy = compute_energy(triang, tmp);
-        if (energy < best_energy) {
-            best_energy = energy;
-            best_triang = triang;
-            best_input   = tmp;
-            found_best  = true;
-        }
-    };
+//         Triangulation triang = ant_colony_optimization(tmp);
+//         double energy = compute_energy(triang, tmp);
+//         if (energy < best_energy) {
+//             best_energy = energy;
+//             best_triang = triang;
+//             best_input   = tmp;
+//             found_best  = true;
+//         }
+//     };
 
-    // ------------------------------------------------------------------------
-    // 3) Enumerate all parameter sets for each method
-    // ------------------------------------------------------------------------
+//     // ------------------------------------------------------------------------
+//     // 3) Enumerate all parameter sets for each method
+//     // ------------------------------------------------------------------------
 
-    // =========== Local Search =============
-    {
-        std::vector<int> local_I_values = {50, 100, 200};
-        for (int I : local_I_values) {
-            run_local_search(I);
-        }
-    }
+//     // =========== Local Search =============
+//     {
+//         std::vector<int> local_I_values = {50, 100, 200};
+//         for (int I : local_I_values) {
+//             run_local_search(I);
+//         }
+//     }
 
-    // =========== Simulated Annealing =============
-    {
-        std::vector<std::pair<double,double>> alphaBetaSA = {
-            {1.0, 1.0},
-            {1.0, 2.0},
-            {2.0, 2.0}
-        };
-        std::vector<int> Lvals = {1000, 5000};
+//     // =========== Simulated Annealing =============
+//     {
+//         std::vector<std::pair<double,double>> alphaBetaSA = {
+//             {1.0, 1.0},
+//             {1.0, 2.0},
+//             {2.0, 2.0}
+//         };
+//         std::vector<int> Lvals = {1000, 5000};
 
-        for (auto &ab : alphaBetaSA) {
-            for (auto &Lval : Lvals) {
-                run_sim_anneal(ab.first, ab.second, Lval);
-            }
-        }
-    }
+//         for (auto &ab : alphaBetaSA) {
+//             for (auto &Lval : Lvals) {
+//                 run_sim_anneal(ab.first, ab.second, Lval);
+//             }
+//         }
+//     }
 
-    // =========== Ant Colony =============
-    {
-        std::vector<std::pair<double,double>> alphaBetaAnt = {
-            {1.0, 1.0},
-            {1.0, 2.0}
-        };
-        std::vector<std::pair<double,double>> xiPsi = {
-            {1.0, 1.0},
-            {2.0, 3.0}
-        };
-        std::vector<double> lambdas = {0.3, 0.5};
-        std::vector<int> kappaVals = {5, 10};
-        std::vector<int> antLvals  = {30, 50};
+//     // =========== Ant Colony =============
+//     {
+//         std::vector<std::pair<double,double>> alphaBetaAnt = {
+//             {1.0, 1.0},
+//             {1.0, 2.0}
+//         };
+//         std::vector<std::pair<double,double>> xiPsi = {
+//             {1.0, 1.0},
+//             {2.0, 3.0}
+//         };
+//         std::vector<double> lambdas = {0.3, 0.5};
+//         std::vector<int> kappaVals = {5, 10};
+//         std::vector<int> antLvals  = {30, 50};
 
-        for (auto &ab : alphaBetaAnt) {
-            for (auto &xp : xiPsi) {
-                for (auto &lam : lambdas) {
-                    for (auto &kv : kappaVals) {
-                        for (auto &Lv : antLvals) {
-                            run_ant_colony(ab.first, ab.second, xp.first, xp.second, lam, kv, Lv);
-                        }
-                    }
-                }
-            }
-        }
-    }
+//         for (auto &ab : alphaBetaAnt) {
+//             for (auto &xp : xiPsi) {
+//                 for (auto &lam : lambdas) {
+//                     for (auto &kv : kappaVals) {
+//                         for (auto &Lv : antLvals) {
+//                             run_ant_colony(ab.first, ab.second, xp.first, xp.second, lam, kv, Lv);
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//     }
 
-    // ------------------------------------------------------------------------
-    // 4) Possibly do a final randomization if too many obtuse remain
-    // ------------------------------------------------------------------------
-    if (found_best) 
-    {
-        int final_obtuse = best_triang.count_obtuse_triangles();
-        int final_steiner = best_triang.cdt.number_of_vertices() - original_input.num_points;
-        double final_energy = original_input.alpha * final_obtuse + original_input.beta * final_steiner;
+//     // ------------------------------------------------------------------------
+//     // 4) Possibly do a final randomization if too many obtuse remain
+//     // ------------------------------------------------------------------------
+//     if (found_best) 
+//     {
+//         int final_obtuse = best_triang.count_obtuse_triangles();
+//         int final_steiner = best_triang.cdt.number_of_vertices() - original_input.num_points;
+//         double final_energy = original_input.alpha * final_obtuse + original_input.beta * final_steiner;
 
-        // Extract the best method and Steiner options
-        std::string best_method = best_input.method; // e.g., "local", "sa", or "ant"
-        std::vector<std::string> steiner_options = best_input.steiner_methods; // List of Steiner options used
+//         // Extract the best method and Steiner options
+//         std::string best_method = best_input.method; // e.g., "local", "sa", or "ant"
+//         std::vector<std::string> steiner_options = best_input.steiner_methods; // List of Steiner options used
 
-        std::cout << "[auto_method] Final Optimization State:\n"
-                << "    Method:           " << best_method << "\n"
-                << "    Steiner Options:  ";
-        for (const auto& option : steiner_options) {
-            std::cout << option << " ";
-        }
-        std::cout << "\n"
-                << "    Obtuse triangles: " << final_obtuse << "\n"
-                << "    Steiner points:   " << final_steiner << "\n"
-                << "    Energy:           " << final_energy << "\n";
-        // Example heuristic
-        if (final_obtuse > 5) {
-            std::cout << "[auto_method] Too many obtuse triangles in the final triangulation. Randomizing...\n";
-            best_triang.randomizationUsed = true;
-            std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count());
+//         std::cout << "[auto_method] Final Optimization State:\n"
+//                 << "    Method:           " << best_method << "\n"
+//                 << "    Steiner Options:  ";
+//         for (const auto& option : steiner_options) {
+//             std::cout << option << " ";
+//         }
+//         std::cout << "\n"
+//                 << "    Obtuse triangles: " << final_obtuse << "\n"
+//                 << "    Steiner points:   " << final_steiner << "\n"
+//                 << "    Energy:           " << final_energy << "\n";
+//         // Example heuristic
+//         if (final_obtuse > 5) {
+//             std::cout << "[auto_method] Too many obtuse triangles in the final triangulation. Randomizing...\n";
+//             best_triang.randomizationUsed = true;
+//             std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count());
             
-            // Rough bounding box or you can compute from region_boundary
-            double xmin = 0.0, xmax = 1000.0, ymin = 0.0, ymax = 1000.0;
-            // or call compute_bounding_box(original_input, xmin, xmax, ymin, ymax);
+//             // Rough bounding box or you can compute from region_boundary
+//             double xmin = 0.0, xmax = 1000.0, ymin = 0.0, ymax = 1000.0;
+//             // or call compute_bounding_box(original_input, xmin, xmax, ymin, ymax);
 
-            std::uniform_real_distribution<double> distx(xmin, xmax);
-            std::uniform_real_distribution<double> disty(ymin, ymax);
+//             std::uniform_real_distribution<double> distx(xmin, xmax);
+//             std::uniform_real_distribution<double> disty(ymin, ymax);
 
-            for (int i = 0; i < 5; i++) {
-                Point rp(distx(rng), disty(rng));
-                best_triang.cdt.insert(rp);
-                best_triang.mark_domain();
-            }
-        }
-        best_triang.randomizationUsed = true;
-        best_triang.mark_domain();
-        AutoMethodResult result;
-        result.triang     = best_triang;
-        result.best_input = best_input;  // Holds the correct method/params
-        return result;
-    }
-    else {
-        // If somehow we found no triang (very unlikely), fallback
-        std::cerr << "[auto_method] Warning: no method produced a valid triang. Returning Delaunay.\n";
-                Triangulation fallback = delaunay_const_triangulation(original_input);
-        AutoMethodResult result;
-        result.triang     = fallback;
-        result.best_input = original_input;  // Or set method="none" if you prefer
-        return result;
-    }
-}
+//             for (int i = 0; i < 5; i++) {
+//                 Point rp(distx(rng), disty(rng));
+//                 best_triang.cdt.insert(rp);
+//                 best_triang.mark_domain();
+//             }
+//         }
+//         best_triang.randomizationUsed = true;
+//         best_triang.mark_domain();
+//         AutoMethodResult result;
+//         result.triang     = best_triang;
+//         result.best_input = best_input;  // Holds the correct method/params
+//         return result;
+//     }
+//     else {
+//         // If somehow we found no triang (very unlikely), fallback
+//         std::cerr << "[auto_method] Warning: no method produced a valid triang. Returning Delaunay.\n";
+//                 Triangulation fallback = delaunay_const_triangulation(original_input);
+//         AutoMethodResult result;
+//         result.triang     = fallback;
+//         result.best_input = original_input;  // Or set method="none" if you prefer
+//         return result;
+//     }
+// }
