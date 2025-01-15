@@ -33,6 +33,7 @@
 \---- summaries<br/>
 \-- README.md<br/>
 \-- research_report_kotsias.pdf<br/>
+\-- best_solutions<br/>
 
 ### Οδηγίες Μεταγλώττισης
 Εφόσον έχουμε εγκαταστήσει τις απαραίτητες βιβλιοθήκες σύμφωνα με τις απαιτήσεις του μαθήματος (CGAL, Qt5, boost), δημιουργούμε από το root directory ένα νέο build directory.<br/>
