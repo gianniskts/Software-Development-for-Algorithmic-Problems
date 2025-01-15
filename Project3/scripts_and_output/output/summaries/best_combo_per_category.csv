@@ -1,0 +1,6 @@
+category,best_method_steiner_combo,p_bar,steiner_points,energy,time
+B,"sa + projection,circumcenter,mean_of_adjacent",6.410046920236323,11,5.5,0.0082082748413085
+A,sa + projection,8.577470840251896,50,25.0,0.3661599159240722
+E,"sa + projection,circumcenter,mean_of_adjacent",8.018023542731212,14,7.0,0.01385498046875
+D,"sa + projection,midpoint,circumcenter,mean_of_adjacent",6.43342113382904,39,21.5,0.3934841156005859
+C,"sa + projection,centroid,circumcenter,mean_of_adjacent",6.008971498082185,35,17.5,0.3490710258483886
